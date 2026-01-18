@@ -1,0 +1,266 @@
+.performance {
+    width: 100%;
+    padding: 4rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.performance-container {
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.performance-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.performance-title {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.performance-description {
+    font-size: 20px;
+    color: var(--black-color);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 600px;
+}
+
+.performance-cards {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: 2rem;
+    width: 100%;
+}
+
+.performance-card {
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.talent-card {
+    background-color: var(--pink-background);
+    border: 1px solid rgba(204, 204, 204, 0.5);
+}
+
+.ai-card {
+    background-color: var(--purple-background);
+    border: 1px solid rgba(204, 204, 204, 0.5);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 39.4px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+}
+
+.card-plus-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--pink-text);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--purple-text);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-checklist-container {
+    overflow: hidden;
+    position: relative;
+    height: 280px;
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    transform: translateZ(0);
+}
+
+.card-checklist-track {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: slideItemsVertically 10s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+@keyframes slideItemsVertically {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+.card-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    flex-shrink: 0;
+}
+
+.talent-card .checklist-item.checked {
+    color: var(--pink-text);
+}
+
+.talent-card .checklist-item:not(.checked) {
+    color: var(--pink-text);
+}
+
+.ai-card .checklist-item.checked {
+    color: var(--purple-text);
+}
+
+.ai-card .checklist-item:not(.checked) {
+    color: var(--purple-text);
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    flex-shrink: 0;
+    padding: 8px;
+    line-height: 1;
+}
+
+.talent-card .check-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    font-weight: 900;
+    background-color: var(--pink-background);
+    border: 1px solid rgba(184, 51, 122, 0.4);
+    color: var(--pink-text);
+    line-height: 1;
+    padding: 9px;
+}
+
+.ai-card .check-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    font-weight: 900;
+    background-color: var(--purple-background);
+    border: 1px solid rgba(69, 51, 184, 0.4);
+    color: var(--purple-text);
+    line-height: 1;
+    padding: 13px;
+}
+
+.talent-card .checklist-item.checked .check-icon {
+    background-color: var(--pink-background);
+    border: 1px solid rgba(184, 51, 122, 0.4);
+    color: var(--pink-text);
+}
+
+.ai-card .checklist-item.checked .check-icon {
+    background-color: var(--purple-background);
+    border: 1px solid rgba(69, 51, 184, 0.4);
+    color: var(--purple-text);
+}
+
+.check-text {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.talent-card .check-text {
+    font-size: 18px;
+}
+
+.card-description {
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    margin-top: auto;
+    opacity: 0.9;
+}
+
+.talent-card .card-description {
+    color: var(--light-pink);
+}
+
+.ai-card .card-description {
+    color: var(--light-purple);
+}
+
+@media (max-width: 768px) {
+    .performance-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .performance-title {
+        font-size: 48px;
+    }
+
+    .performance-description {
+        font-size: 20px;
+    }
+
+    .card-checklist-container {
+        height: 240px;
+    }
+
+    .card-checklist-track {
+        animation: slideItemsVertically 8s linear infinite;
+    }
+}
+
