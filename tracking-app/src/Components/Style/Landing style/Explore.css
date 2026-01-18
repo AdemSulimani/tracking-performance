@@ -1,0 +1,445 @@
+.explore {
+    width: 100%;
+    padding: 4rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.explore-container {
+    width: 1400px;
+    max-width: 100%;
+    border: 1px solid rgba(204, 204, 204, 0.5);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.explore-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+}
+
+.explore-header-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.explore-tag {
+    font-size: 10px;
+    color: var(--purple-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--purple-background);
+    padding: 4px 12px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.explore-heading {
+    font-size: 63px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.explore-chat {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.explore-user-message {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.explore-message-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--purple-background);
+    color: var(--purple-text);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.explore-message-text {
+    flex: 1;
+    text-align: left;
+    color: var(--black-color);
+    font-size: 16px;
+}
+
+.explore-send-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--purple-background);
+    color: var(--purple-text);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.explore-ai-response {
+    width: 100%;
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+    background: white;
+    border-radius: 12px;
+    color: var(--black-color);
+    font-size: 16px;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px;
+}
+
+.explore-ai-text {
+    margin: 0;
+    margin-top: 0;
+}
+
+.typing-cursor {
+    display: inline-block;
+    animation: blink 1s infinite;
+    margin-left: 2px;
+    color: var(--purple-text);
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
+.explore-action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: auto;
+}
+
+.explore-action-button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: "Inter", sans-serif;
+    background-color: var(--purple-background);
+    color: var(--purple-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s ease;
+}
+
+.explore-action-button:hover {
+    opacity: 0.8;
+}
+
+.explore-promotional {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.explore-promotional-text {
+    font-size: 19.3px;
+    color: var(--black-color);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.explore-promotional-text-bottom {
+    font-size: 23px;
+    color: var(--black-color);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.explore-learn-more-button {
+    padding: 24px 40px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: "Inter", sans-serif;
+    background-color: var(--purple-background);
+    color: var(--purple-text);
+    transition: opacity 0.2s ease;
+}
+
+.explore-learn-more-button:hover {
+    opacity: 0.8;
+}
+
+/* Responsive styles */
+@media (max-width: 1440px) {
+    .explore-container {
+        width: 100%;
+        max-width: 1400px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .explore-container {
+        padding: 2.5rem;
+    }
+
+    .explore-heading {
+        font-size: 52px;
+    }
+
+    .explore-ai-response {
+        padding: 2rem 1.25rem 1.25rem 1.25rem;
+        min-height: 180px;
+        gap: 1.5rem;
+        justify-content: flex-start;
+    }
+
+    .explore-action-buttons {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .explore {
+        padding: 2rem 1rem;
+    }
+
+    .explore-container {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+    }
+
+    .explore-content {
+        gap: 1.5rem;
+    }
+
+    .explore-heading {
+        font-size: 42px;
+    }
+
+    .explore-chat {
+        gap: 1.25rem;
+    }
+
+    .explore-user-message {
+        padding: 0.875rem;
+        gap: 0.875rem;
+    }
+
+    .explore-message-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .explore-message-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .explore-message-text {
+        font-size: 15px;
+    }
+
+    .explore-send-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .explore-send-button svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .explore-ai-response {
+        padding: 2rem 1.25rem 1.25rem 1.25rem;
+        min-height: 160px;
+        font-size: 15px;
+        gap: 1.5rem;
+        justify-content: flex-start;
+    }
+
+    .explore-action-buttons {
+        margin-top: 0;
+    }
+
+    .explore-action-buttons {
+        flex-direction: row;
+        width: 100%;
+        gap: 0.625rem;
+    }
+
+    .explore-action-button {
+        width: auto;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .explore-promotional {
+        gap: 1.25rem;
+    }
+
+    .explore-promotional-text-bottom {
+        font-size: 19px;
+    }
+
+    .explore-learn-more-button {
+        padding: 20px 32px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .explore {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .explore-container {
+        padding: 1.5rem 1rem;
+        border-radius: 15px;
+    }
+
+    .explore-content {
+        gap: 1.25rem;
+    }
+
+    .explore-header-section {
+        gap: 0.25rem;
+    }
+
+    .explore-tag {
+        font-size: 9px;
+        padding: 3px 10px;
+    }
+
+    .explore-heading {
+        font-size: 32px;
+    }
+
+    .explore-chat {
+        gap: 1rem;
+    }
+
+    .explore-user-message {
+        padding: 0.75rem;
+        gap: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .explore-message-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .explore-message-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .explore-message-text {
+        font-size: 14px;
+    }
+
+    .explore-send-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .explore-send-button svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .explore-ai-response {
+        padding: 1.5rem 1rem 1rem 1rem;
+        min-height: 140px;
+        font-size: 14px;
+        border-radius: 10px;
+        gap: 1.25rem;
+        justify-content: flex-start;
+    }
+
+    .explore-action-buttons {
+        margin-top: 0;
+    }
+
+    .explore-action-buttons {
+        gap: 0.5rem;
+    }
+
+    .explore-action-button {
+        width: auto;
+        padding: 8px 14px;
+        font-size: 13px;
+        border-radius: 6px;
+        justify-content: center;
+    }
+
+    .explore-action-button svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .explore-promotional {
+        gap: 1rem;
+    }
+
+    .explore-promotional-text {
+        font-size: 16px;
+    }
+
+    .explore-promotional-text-bottom {
+        font-size: 17px;
+    }
+
+    .explore-learn-more-button {
+        padding: 18px 28px;
+        font-size: 14px;
+        border-radius: 8px;
+        width: auto;
+    }
+}
+

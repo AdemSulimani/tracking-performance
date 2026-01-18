@@ -1,0 +1,35 @@
+*,
+*::after,
+*::before {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --dark-green-background: #046645;
+  --black-color: #001f1f;
+  --purple-text: #4533b8;
+  --purple-background: #f0f0ff;
+  --pink-text: #B8337A;
+  --pink-background: #fcf2fe;
+  --nav-text: #455252;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  padding-bottom: 3500px;
+  padding-top: 132px;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 122px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-top: 112px;
+  }
+}
