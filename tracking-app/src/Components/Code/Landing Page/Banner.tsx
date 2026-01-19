@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../../Style/Landing style/Banner.css';
 
 interface BannerProps {
@@ -7,12 +7,29 @@ interface BannerProps {
 
 export function Banner({ onBannerHidden }: BannerProps) {
     const [isVisible, setIsVisible] = useState(true);
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const [isScrolled, setIsScrolled] = useState(() => {
+        // Initialize based on initial scroll position
+        if (typeof window !== 'undefined') {
+            return window.scrollY > 50;
+        }
+        return false;
+    });
+    const lastScrollYRef = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
+
+    useEffect(() => {
+        // Check initial scroll position and notify parent
+        const initialScrollY = window.scrollY;
+        lastScrollYRef.current = initialScrollY;
+        
+        if (initialScrollY > 50) {
+            onBannerHidden?.(true);
+        }
+    }, [onBannerHidden]);
 
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
+            const lastScrollY = lastScrollYRef.current;
             
             if (currentScrollY > lastScrollY && currentScrollY > 50) {
                 // Scrolling down
@@ -28,7 +45,7 @@ export function Banner({ onBannerHidden }: BannerProps) {
                 onBannerHidden?.(true);
             }
             
-            setLastScrollY(currentScrollY);
+            lastScrollYRef.current = currentScrollY;
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -36,7 +53,7 @@ export function Banner({ onBannerHidden }: BannerProps) {
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
-    }, [lastScrollY, onBannerHidden]);
+    }, [onBannerHidden]);
 
     const handleClose = () => {
         setIsVisible(false);

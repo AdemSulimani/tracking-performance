@@ -7,18 +7,19 @@
 }
 
 :root {
-  --dark-green-background: #046645;
+  --dark-green-background: #eafce9;
   --black-color: #001f1f;
   --purple-text: #4533b8;
   --purple-background: #f0f0ff;
   --pink-text: #B8337A;
   --pink-background: #fcf2fe;
   --nav-text: #455252;
+  --light-pink: #d64da9;
+  --light-purple: #624ee5;
 }
 
 body {
   font-family: "Inter", sans-serif;
-  padding-bottom: 3500px;
   padding-top: 132px;
 }
 
