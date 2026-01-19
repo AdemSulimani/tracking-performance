@@ -36,6 +36,7 @@ export function Performance() {
             
             if (track.children.length === itemCount) {
                 // Duplicate the entire set once for seamless loop
+                // This ensures when first set moves up and out, second set is ready to continue
                 const items = Array.from(track.children)
                 items.forEach((item) => {
                     const clone = item.cloneNode(true) as HTMLElement

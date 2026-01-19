@@ -117,10 +117,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    animation: slideItemsVertically 10s linear infinite;
+    animation: slideItemsVertically 20s linear infinite;
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
+    animation-play-state: running;
 }
 
 @keyframes slideItemsVertically {
@@ -261,7 +262,7 @@
     }
 
     .card-checklist-track {
-        animation: slideItemsVertically 8s linear infinite;
+        animation: slideItemsVertically 16s linear infinite;
     }
 }
 
