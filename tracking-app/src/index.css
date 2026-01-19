@@ -7,7 +7,7 @@
 }
 
 :root {
-  --dark-green-background: #046645;
+  --dark-green-background: #eafce9;
   --black-color: #001f1f;
   --purple-text: #4533b8;
   --purple-background: #f0f0ff;
@@ -20,7 +20,6 @@
 
 body {
   font-family: "Inter", sans-serif;
-  padding-bottom: 3500px;
   padding-top: 132px;
 }
 

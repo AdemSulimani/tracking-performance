@@ -27,21 +27,29 @@ export function Performance() {
         const talentTrack = talentTrackRef.current
         const aiTrack = aiTrackRef.current
 
-        // Duplicate items for infinite slide
-        if (talentTrack && talentTrack.children.length === talentItems.length) {
-            const items = Array.from(talentTrack.children)
-            items.forEach((item) => {
-                const clone = item.cloneNode(true) as HTMLElement
-                talentTrack.appendChild(clone)
-            })
+        // Duplicate items for seamless infinite slide
+        const duplicateItems = (track: HTMLDivElement, itemCount: number) => {
+            // Clear any existing duplicates first
+            while (track.children.length > itemCount) {
+                track.removeChild(track.lastChild!)
+            }
+            
+            if (track.children.length === itemCount) {
+                // Duplicate the entire set once for seamless loop
+                const items = Array.from(track.children)
+                items.forEach((item) => {
+                    const clone = item.cloneNode(true) as HTMLElement
+                    track.appendChild(clone)
+                })
+            }
         }
 
-        if (aiTrack && aiTrack.children.length === aiItems.length) {
-            const items = Array.from(aiTrack.children)
-            items.forEach((item) => {
-                const clone = item.cloneNode(true) as HTMLElement
-                aiTrack.appendChild(clone)
-            })
+        if (talentTrack) {
+            duplicateItems(talentTrack, talentItems.length)
+        }
+
+        if (aiTrack) {
+            duplicateItems(aiTrack, aiItems.length)
         }
     }, [])
 

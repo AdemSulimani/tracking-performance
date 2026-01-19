@@ -248,11 +248,11 @@
     }
 
     .performance-title {
-        font-size: 48px;
+        font-size: 36px;
     }
 
     .performance-description {
-        font-size: 20px;
+        font-size: 16px;
     }
 
     .card-checklist-container {
@@ -261,6 +261,16 @@
 
     .card-checklist-track {
         animation: slideItemsVertically 8s linear infinite;
+    }
+}
+
+@media (max-width: 480px) {
+    .performance-title {
+        font-size: 28px;
+    }
+
+    .performance-description {
+        font-size: 14px;
     }
 }
 
