@@ -1,0 +1,131 @@
+.forgotpass-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background: white;
+    margin-top: -132px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .forgotpass-container {
+        margin-top: -122px;
+    }
+}
+
+@media (max-width: 480px) {
+    .forgotpass-container {
+        margin-top: -112px;
+    }
+}
+
+.forgotpass-form-wrapper {
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.forgotpass-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0 0 3.5rem 0;
+    text-align: center;
+    font-family: "Inter", sans-serif;
+}
+
+.forgotpass-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: "Inter", sans-serif;
+    color: var(--black-color);
+    background: white;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--purple-text);
+    box-shadow: 0 0 0 3px rgba(69, 51, 184, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--nav-text);
+    opacity: 0.6;
+}
+
+.forgotpass-info {
+    font-size: 14px;
+    color: var(--nav-text);
+    font-family: "Inter", sans-serif;
+    margin: 1.5rem 0 0 0;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.forgotpass-button {
+    width: 100%;
+    padding: 16px 24px;
+    background-color: var(--purple-background);
+    color: var(--purple-text);
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    margin-top: 0.5rem;
+}
+
+.forgotpass-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.forgotpass-button:active {
+    transform: translateY(0);
+}
+
+/* Prevent horizontal scroll */
+.forgotpass-container,
+.forgotpass-form-wrapper {
+    overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+    .forgotpass-title {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .forgotpass-container {
+        padding: 1rem;
+    }
+
+    .forgotpass-title {
+        font-size: 24px;
+        margin-bottom: 1.5rem;
+    }
+}
+
