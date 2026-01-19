@@ -22,19 +22,19 @@
 }
 
 .our-process-heading {
-    font-size: 63px;
-    font-weight: 700;
+    font-size: 48px;
+    font-weight: 600;
     color: var(--black-color);
     margin: 0;
     line-height: 1.2;
 }
 
 .our-process-highlight {
-    background-color: #4533b8;
-    color: white;
-    padding: 0 12px;
-    border-radius: 8px;
-    display: inline-block;
+    background-color: transparent;
+    color: #4533b8;
+    padding: 0;
+    border-radius: 0;
+    display: inline;
 }
 
 .our-process-steps {
@@ -176,7 +176,8 @@
 /* Responsive styles */
 @media (max-width: 1024px) {
     .our-process-heading {
-        font-size: 56px;
+        font-size: 36px;
+        font-weight: 600;
     }
 
     .our-process-steps {
@@ -195,7 +196,8 @@
     }
 
     .our-process-heading {
-        font-size: 42px;
+        font-size: 28px;
+        font-weight: 600;
     }
 
     .our-process-steps {
@@ -227,7 +229,8 @@
 
 @media (max-width: 480px) {
     .our-process-heading {
-        font-size: 36px;
+        font-size: 24px;
+        font-weight: 600;
     }
 
     .step-title {
