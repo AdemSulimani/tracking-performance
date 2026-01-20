@@ -59,6 +59,73 @@
     gap: 0.5rem;
 }
 
+.company-type-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.company-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Inter", sans-serif;
+}
+
+.company-type-card:hover {
+    border-color: var(--purple-text);
+    background: rgba(69, 51, 184, 0.02);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(69, 51, 184, 0.1);
+}
+
+.company-type-card.selected {
+    border-color: var(--purple-text);
+    background: var(--purple-background);
+    box-shadow: 0 0 0 3px rgba(69, 51, 184, 0.1);
+}
+
+.company-type-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nav-text);
+    transition: color 0.2s ease;
+}
+
+.company-type-card:hover .company-type-icon,
+.company-type-card.selected .company-type-icon {
+    color: var(--purple-text);
+}
+
+.company-type-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--black-color);
+    text-align: center;
+    transition: color 0.2s ease;
+}
+
+.company-type-card.selected .company-type-text {
+    color: var(--purple-text);
+}
+
+.form-error {
+    font-size: 12px;
+    color: #e74c3c;
+    margin-top: 0.25rem;
+    font-family: "Inter", sans-serif;
+}
+
 .form-label {
     font-size: 14px;
     font-weight: 600;
@@ -230,6 +297,19 @@
     .form-row {
         grid-template-columns: 1fr;
     }
+
+    .company-type-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .company-type-card {
+        padding: 1rem 0.75rem;
+    }
+
+    .company-type-text {
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -244,6 +324,22 @@
     .register-title {
         font-size: 24px;
         margin-bottom: 1.5rem;
+    }
+
+    .company-type-selector {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .company-type-card {
+        padding: 1rem;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 1rem;
+    }
+
+    .company-type-text {
+        font-size: 13px;
     }
 }
 

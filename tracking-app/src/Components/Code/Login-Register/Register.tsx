@@ -4,6 +4,7 @@ import '../../Style/Login style/Register.css';
 
 export function Register() {
     const [formData, setFormData] = useState({
+        companyType: '',
         name: '',
         lastname: '',
         email: '',
@@ -20,8 +21,18 @@ export function Register() {
         });
     };
 
+    const handleCompanyTypeSelect = (type: string) => {
+        setFormData({
+            ...formData,
+            companyType: type
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.companyType) {
+            return;
+        }
         // Handle registration logic here
     };
 
@@ -30,6 +41,68 @@ export function Register() {
             <div className="register-form-wrapper">
                 <h2 className="register-title">Create Account</h2>
                 <form className="register-form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label">Company Type</label>
+                        <div className="company-type-selector">
+                            <button
+                                type="button"
+                                className={`company-type-card ${formData.companyType === 'sales' ? 'selected' : ''}`}
+                                onClick={() => handleCompanyTypeSelect('sales')}
+                            >
+                                <div className="company-type-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="8.5" cy="7" r="4"></circle>
+                                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                                    </svg>
+                                </div>
+                                <span className="company-type-text">Sales Company</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={`company-type-card ${formData.companyType === 'real-estate' ? 'selected' : ''}`}
+                                onClick={() => handleCompanyTypeSelect('real-estate')}
+                            >
+                                <div className="company-type-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                </div>
+                                <span className="company-type-text">Real Estate Company</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={`company-type-card ${formData.companyType === 'telemarketing' ? 'selected' : ''}`}
+                                onClick={() => handleCompanyTypeSelect('telemarketing')}
+                            >
+                                <div className="company-type-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    </svg>
+                                </div>
+                                <span className="company-type-text">Telemarketing Company</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={`company-type-card ${formData.companyType === 'agency' ? 'selected' : ''}`}
+                                onClick={() => handleCompanyTypeSelect('agency')}
+                            >
+                                <div className="company-type-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                                    </svg>
+                                </div>
+                                <span className="company-type-text">Agency</span>
+                            </button>
+                        </div>
+                        {formData.companyType === '' && (
+                            <span className="form-error">Please select a company type</span>
+                        )}
+                    </div>
                     <div className="form-row">
                         <div className="form-group">
                             <label htmlFor="name" className="form-label">Name</label>
