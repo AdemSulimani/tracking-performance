@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import '../../Style/Login style/Register.css';
 
 export function Register() {
@@ -13,12 +14,32 @@ export function Register() {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [success, setSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const { register } = useAuth();
+
+    const setFieldError = (field: string, message: string) => {
+        setFieldErrors(prev => ({ ...prev, [field]: message }));
+    };
+
+    const clearFieldError = (field: string) => {
+        setFieldErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[field];
+            return newErrors;
+        });
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const fieldName = e.target.name;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [fieldName]: e.target.value
         });
+        // Clear error for this field when user starts typing
+        clearFieldError(fieldName);
     };
 
     const handleCompanyTypeSelect = (type: string) => {
@@ -26,14 +47,67 @@ export function Register() {
             ...formData,
             companyType: type
         });
+        clearFieldError('companyType');
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFieldErrors({});
+
+        // Client-side validation
         if (!formData.companyType) {
+            setFieldError('companyType', 'Please select a company type');
             return;
         }
-        // Handle registration logic here
+
+        if (formData.password !== formData.confirmPassword) {
+            setFieldError('confirmPassword', 'Passwords do not match');
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setFieldError('password', 'Password must be at least 6 characters');
+            return;
+        }
+
+        setIsLoading(true);
+        setFieldErrors({});
+        setSuccess(false);
+
+        try {
+            await register(formData);
+            // Show success message
+            setSuccess(true);
+            setIsLoading(false);
+            
+            // Redirect to login after 1.5 seconds with smooth transition
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+            
+            // Map backend error messages to specific fields
+            if (errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('already')) {
+                setFieldError('email', 'Email is already in use');
+            } else if (errorMessage.toLowerCase().includes('email') && (errorMessage.toLowerCase().includes('not valid') || errorMessage.toLowerCase().includes('invalid'))) {
+                setFieldError('email', 'Email is not valid');
+            } else if (errorMessage.toLowerCase().includes('username') || (errorMessage.toLowerCase().includes('name') && errorMessage.toLowerCase().includes('already'))) {
+                setFieldError('name', 'Username (name) is already in use');
+            } else if (errorMessage.toLowerCase().includes('name') && errorMessage.toLowerCase().includes('at least')) {
+                setFieldError('name', 'Name must be at least 2 characters');
+            } else if (errorMessage.toLowerCase().includes('password') && errorMessage.toLowerCase().includes('at least')) {
+                setFieldError('password', 'Password must be at least 6 characters');
+            } else if (errorMessage.toLowerCase().includes('password') && errorMessage.toLowerCase().includes('match')) {
+                setFieldError('confirmPassword', 'Passwords do not match');
+            } else {
+                // Generic error - show for companyType as fallback
+                setFieldError('companyType', errorMessage);
+            }
+            
+            setIsLoading(false);
+            setSuccess(false);
+        }
     };
 
     return (
@@ -43,6 +117,9 @@ export function Register() {
                 <form className="register-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label">Company Type</label>
+                        {fieldErrors.companyType && (
+                            <span className="field-error">{fieldErrors.companyType}</span>
+                        )}
                         <div className="company-type-selector">
                             <button
                                 type="button"
@@ -99,7 +176,7 @@ export function Register() {
                                 <span className="company-type-text">Agency</span>
                             </button>
                         </div>
-                        {formData.companyType === '' && (
+                        {!fieldErrors.companyType && formData.companyType === '' && (
                             <span className="form-error">Please select a company type</span>
                         )}
                     </div>
@@ -110,12 +187,16 @@ export function Register() {
                                 type="text"
                                 id="name"
                                 name="name"
-                                className="form-input"
+                                className={`form-input ${fieldErrors.name ? 'input-error' : ''}`}
                                 placeholder="Enter your name"
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
+                                disabled={isLoading || success}
                             />
+                            {fieldErrors.name && (
+                                <span className="field-error">{fieldErrors.name}</span>
+                            )}
                         </div>
 
                         <div className="form-group">
@@ -124,12 +205,16 @@ export function Register() {
                                 type="text"
                                 id="lastname"
                                 name="lastname"
-                                className="form-input"
+                                className={`form-input ${fieldErrors.lastname ? 'input-error' : ''}`}
                                 placeholder="Enter your lastname"
                                 value={formData.lastname}
                                 onChange={handleChange}
                                 required
+                                disabled={isLoading || success}
                             />
+                            {fieldErrors.lastname && (
+                                <span className="field-error">{fieldErrors.lastname}</span>
+                            )}
                         </div>
                     </div>
 
@@ -139,12 +224,16 @@ export function Register() {
                             type="email"
                             id="email"
                             name="email"
-                            className="form-input"
+                            className={`form-input ${fieldErrors.email ? 'input-error' : ''}`}
                             placeholder="Enter your email"
                             value={formData.email}
                             onChange={handleChange}
                             required
+                            disabled={isLoading || success}
                         />
+                        {fieldErrors.email && (
+                            <span className="field-error">{fieldErrors.email}</span>
+                        )}
                     </div>
 
                     <div className="form-group">
@@ -154,11 +243,12 @@ export function Register() {
                                 type={showPassword ? 'text' : 'password'}
                                 id="password"
                                 name="password"
-                                className="form-input"
+                                className={`form-input ${fieldErrors.password ? 'input-error' : ''}`}
                                 placeholder="Enter your password"
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
+                                disabled={isLoading || success}
                             />
                             <button
                                 type="button"
@@ -179,6 +269,9 @@ export function Register() {
                                 )}
                             </button>
                         </div>
+                        {fieldErrors.password && (
+                            <span className="field-error">{fieldErrors.password}</span>
+                        )}
                     </div>
 
                     <div className="form-group">
@@ -188,11 +281,12 @@ export function Register() {
                                 type={showConfirmPassword ? 'text' : 'password'}
                                 id="confirmPassword"
                                 name="confirmPassword"
-                                className="form-input"
+                                className={`form-input ${fieldErrors.confirmPassword ? 'input-error' : ''}`}
                                 placeholder="Confirm your password"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
+                                disabled={isLoading || success}
                             />
                             <button
                                 type="button"
@@ -213,9 +307,29 @@ export function Register() {
                                 )}
                             </button>
                         </div>
+                        {fieldErrors.confirmPassword && (
+                            <span className="field-error">{fieldErrors.confirmPassword}</span>
+                        )}
                     </div>
 
-                    <button type="submit" className="register-button">Register Now</button>
+                    <button type="submit" className="register-button" disabled={isLoading || success}>
+                        {isLoading ? 'Registering...' : success ? 'User Created!' : 'Register Now'}
+                    </button>
+                    {success && (
+                        <div style={{
+                            marginTop: '1rem',
+                            padding: '0.75rem',
+                            backgroundColor: '#d1fae5',
+                            color: '#10b981',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            textAlign: 'center',
+                            animation: 'fadeIn 0.3s ease'
+                        }}>
+                            ✓ User created successfully! Redirecting to login...
+                        </div>
+                    )}
                 </form>
 
                 <div className="register-divider">

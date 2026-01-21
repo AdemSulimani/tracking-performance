@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import '../../Style/Login style/Login.css';
 
 export function Login() {
@@ -7,16 +8,43 @@ export function Login() {
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const { login } = useAuth();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle login logic here
+        setError('');
+        setIsLoading(true);
+
+        try {
+            await login(email, password);
+            // Navigation is handled by AuthContext (with loading spinner - 2 seconds)
+            // Don't set isLoading to false here, let the redirect happen
+        } catch (err) {
+            // Show error message without refreshing page
+            setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+            setIsLoading(false); // Stop loading on error
+        }
     };
 
     return (
         <div className="login-container">
             <div className="login-form-wrapper">
                 <h2 className="login-title">Sign In</h2>
+                {error && (
+                    <div style={{ 
+                        color: 'red', 
+                        marginBottom: '1rem', 
+                        padding: '0.75rem', 
+                        backgroundColor: '#fee', 
+                        borderRadius: '4px',
+                        fontSize: '0.9rem'
+                    }}>
+                        {error}
+                    </div>
+                )}
                 <form className="login-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="email" className="form-label">Email Address</label>
@@ -28,6 +56,7 @@ export function Login() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -42,6 +71,7 @@ export function Login() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                             <button
                                 type="button"
@@ -77,7 +107,9 @@ export function Login() {
                         <Link to="/forgot-password" className="forgot-password">forgot password?</Link>
                     </div>
 
-                    <button type="submit" className="login-button">Sign In</button>
+                    <button type="submit" className="login-button" disabled={isLoading}>
+                        {isLoading ? 'Signing In...' : 'Sign In'}
+                    </button>
                 </form>
 
                 <div className="login-divider">
