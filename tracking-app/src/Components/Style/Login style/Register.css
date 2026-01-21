@@ -126,6 +126,20 @@
     font-family: "Inter", sans-serif;
 }
 
+.field-error {
+    font-size: 12px;
+    color: #e74c3c;
+    margin-top: 0.25rem;
+    font-family: "Inter", sans-serif;
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.input-error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+}
+
 .form-label {
     font-size: 14px;
     font-weight: 600;
@@ -347,5 +361,21 @@
 .register-container,
 .register-form-wrapper {
     overflow-x: hidden;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.register-form-wrapper {
+    transition: opacity 0.3s ease;
 }
 

@@ -19,6 +19,7 @@ import { Sales } from './Components/Code/Dashboards/Sales'
 import { Telemarketing } from './Components/Code/Dashboards/Telemarketing'
 import { RealEstate } from './Components/Code/Dashboards/RealEstate'
 import { Agency } from './Components/Code/Dashboards/Agency'
+import { ProtectedRoute } from './Components/ProtectedRoute'
 
 function App() {
   const [isBannerHidden, setIsBannerHidden] = useState(false);
@@ -43,10 +44,38 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/authentication" element={<Authentication />} />
       <Route path="/forgot-password" element={<Forgotpass />} />
-      <Route path="/sales" element={<Sales />} />
-      <Route path="/telemarketing" element={<Telemarketing />} />
-      <Route path="/real-estate" element={<RealEstate />} />
-      <Route path="/agency" element={<Agency />} />
+      <Route 
+        path="/sales" 
+        element={
+          <ProtectedRoute requiredCompanyType="sales">
+            <Sales />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/telemarketing" 
+        element={
+          <ProtectedRoute requiredCompanyType="telemarketing">
+            <Telemarketing />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/real-estate" 
+        element={
+          <ProtectedRoute requiredCompanyType="real-estate">
+            <RealEstate />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/agency" 
+        element={
+          <ProtectedRoute requiredCompanyType="agency">
+            <Agency />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   )
 }
