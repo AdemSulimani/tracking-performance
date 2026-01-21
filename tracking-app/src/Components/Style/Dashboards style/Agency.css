@@ -1,0 +1,692 @@
+.agency-dashboard {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    background: white;
+    font-family: "Inter", sans-serif;
+    margin: 0;
+    padding-top: 0;
+    margin-top: -132px;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styles */
+.agency-sidebar {
+    width: 260px;
+    background: var(--purple-background);
+    border-right: 1px solid rgba(69, 51, 184, 0.1);
+    padding: 2.5rem 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.agency-sidebar .sidebar-header {
+    padding: 2rem 2rem 2rem 2rem;
+    border-bottom: 1px solid rgba(69, 51, 184, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.agency-sidebar .sidebar-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-sidebar .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+}
+
+.agency-sidebar .nav-item {
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    color: var(--nav-text);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    text-align: left;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.agency-sidebar .nav-item:hover {
+    background: rgba(69, 51, 184, 0.08);
+    color: var(--purple-text);
+}
+
+.agency-sidebar .nav-item.active {
+    background: rgba(69, 51, 184, 0.15);
+    color: var(--purple-text);
+    font-weight: 600;
+}
+
+/* Main Content Area */
+.agency-main {
+    flex: 1;
+    padding: 2rem;
+    padding-top: 50px;
+    margin-top: 0;
+    margin-left: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: white;
+    min-height: 100vh;
+}
+
+.agency-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.agency-content .dashboard-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+    padding-top: 1.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+/* KPI Cards */
+.agency-content .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.agency-content .kpi-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agency-content .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.agency-content .kpi-label {
+    font-size: 14px;
+    color: var(--nav-text);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin-bottom: 0.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .kpi-change {
+    font-size: 13px;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .kpi-change.positive {
+    color: #10b981;
+}
+
+.agency-content .kpi-change.negative {
+    color: #ef4444;
+}
+
+/* Charts Section */
+.agency-content .charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.agency-content .chart-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.agency-content .chart-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0 0 1.5rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .chart-container {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Bar Chart */
+.agency-content .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    gap: 1rem;
+    padding: 1rem 0;
+    min-width: 0;
+}
+
+.agency-content .bar-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.agency-content .bar {
+    width: 100%;
+    background: linear-gradient(180deg, var(--purple-text) 0%, var(--light-purple) 100%);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    min-height: 20px;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0.5rem;
+}
+
+.agency-content .bar:hover {
+    opacity: 0.9;
+}
+
+.agency-content .bar-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .bar-label {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin-top: 0.5rem;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+/* Table Section */
+.agency-content .table-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.agency-content .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0 0 1.5rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .section-description {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .table-wrapper {
+    overflow-x: auto;
+}
+
+.agency-content .team-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .team-table thead {
+    background: var(--purple-background);
+}
+
+.agency-content .team-table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--black-color);
+    border-bottom: 2px solid rgba(69, 51, 184, 0.2);
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .team-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 14px;
+    color: var(--nav-text);
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .team-table tbody tr:hover {
+    background: rgba(69, 51, 184, 0.05);
+}
+
+.agency-content .member-name {
+    font-weight: 600;
+    color: var(--black-color);
+}
+
+.agency-content .score-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(69, 51, 184, 0.1);
+    color: var(--purple-text);
+    font-weight: 600;
+    font-size: 13px;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .status-badge.status-active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.agency-content .status-badge.status-on-leave {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.agency-content .status-badge.status-busy {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Projects Section */
+.agency-content .projects-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.agency-content .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.agency-content .project-card {
+    background: var(--purple-background);
+    border: 1px solid rgba(69, 51, 184, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agency-content .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(69, 51, 184, 0.15);
+}
+
+.agency-content .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.agency-content .project-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .project-status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: "Inter", sans-serif;
+    text-transform: uppercase;
+}
+
+.agency-content .project-status-badge.status-in-progress {
+    background: rgba(69, 51, 184, 0.1);
+    color: var(--purple-text);
+}
+
+.agency-content .project-status-badge.status-completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.agency-content .project-status-badge.status-on-hold {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.agency-content .progress-bar-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.agency-content .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(69, 51, 184, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.agency-content .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple-text) 0%, var(--light-purple) 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.agency-content .progress-text {
+    font-size: 13px;
+    color: var(--nav-text);
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+/* Upload Section */
+.agency-content .upload-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.agency-content .upload-description {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .upload-dropzone {
+    border: 2px dashed #e5e5e5;
+    border-radius: 15px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--purple-background);
+}
+
+.agency-content .upload-dropzone:hover {
+    border-color: var(--purple-text);
+    background: rgba(69, 51, 184, 0.05);
+}
+
+.agency-content .upload-icon {
+    font-size: 48px;
+    margin-bottom: 1rem;
+}
+
+.agency-content .upload-text {
+    font-size: 16px;
+    color: var(--black-color);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .upload-hint {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+/* Performance Section */
+.agency-content .performance-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.agency-content .campaigns-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.agency-content .campaign-card {
+    background: var(--purple-background);
+    border: 1px solid rgba(69, 51, 184, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agency-content .campaign-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(69, 51, 184, 0.15);
+}
+
+.agency-content .campaign-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0 0 1rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .campaign-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.agency-content .metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.agency-content .metric-label {
+    font-size: 14px;
+    color: var(--nav-text);
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .metric-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black-color);
+    font-family: "Inter", sans-serif;
+}
+
+/* Settings Section */
+.agency-content .settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.agency-content .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.agency-content .settings-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agency-content .settings-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.agency-content .settings-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0 0 0.5rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.agency-content .settings-card p {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin: 0;
+    line-height: 1.6;
+    font-family: "Inter", sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .agency-content .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .agency-dashboard {
+        flex-direction: column;
+        margin-top: -122px;
+    }
+
+    .agency-sidebar {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        position: relative;
+        left: 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(69, 51, 184, 0.1);
+        padding: 1rem 0;
+        z-index: 1;
+    }
+
+    .agency-sidebar .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0 1rem;
+    }
+
+    .agency-sidebar .nav-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .agency-main {
+        margin-left: 0;
+        padding: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .agency-content .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .agency-content .dashboard-title {
+        font-size: 28px;
+    }
+
+    .agency-content .chart-container {
+        height: 250px;
+    }
+
+    .agency-content .projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .agency-content .campaigns-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .agency-dashboard {
+        margin-top: -112px;
+    }
+
+    .agency-main {
+        padding: 1rem;
+        padding-top: 1rem;
+    }
+
+    .agency-content .dashboard-title {
+        font-size: 24px;
+    }
+
+    .agency-content .kpi-value {
+        font-size: 28px;
+    }
+
+    .agency-content .chart-container {
+        height: 200px;
+    }
+
+    .agency-content .team-table {
+        font-size: 12px;
+    }
+
+    .agency-content .team-table th,
+    .agency-content .team-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+

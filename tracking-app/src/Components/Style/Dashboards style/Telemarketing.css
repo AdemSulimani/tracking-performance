@@ -1,0 +1,440 @@
+.telemarketing-dashboard {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    background: white;
+    font-family: "Inter", sans-serif;
+    margin: 0;
+    padding-top: 0;
+    margin-top: -132px;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styles */
+.telemarketing-sidebar {
+    width: 260px;
+    background: var(--purple-background);
+    border-right: 1px solid rgba(69, 51, 184, 0.1);
+    padding: 2.5rem 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.telemarketing-sidebar .sidebar-header {
+    padding: 2rem 2rem 2rem 2rem;
+    border-bottom: 1px solid rgba(69, 51, 184, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.telemarketing-sidebar .sidebar-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-sidebar .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+}
+
+.telemarketing-sidebar .nav-item {
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    color: var(--nav-text);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    text-align: left;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.telemarketing-sidebar .nav-item:hover {
+    background: rgba(69, 51, 184, 0.08);
+    color: var(--purple-text);
+}
+
+.telemarketing-sidebar .nav-item.active {
+    background: rgba(69, 51, 184, 0.15);
+    color: var(--purple-text);
+    font-weight: 600;
+}
+
+/* Main Content Area */
+.telemarketing-main {
+    flex: 1;
+    padding: 2rem;
+    padding-top: 50px;
+    margin-top: 0;
+    margin-left: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: white;
+    min-height: 100vh;
+}
+
+.telemarketing-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.telemarketing-content .dashboard-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin: 0;
+    padding-top: 1.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+/* KPI Cards */
+.telemarketing-content .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.telemarketing-content .kpi-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.telemarketing-content .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.telemarketing-content .kpi-label {
+    font-size: 14px;
+    color: var(--nav-text);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--black-color);
+    margin-bottom: 0.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .kpi-change {
+    font-size: 13px;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .kpi-change.positive {
+    color: #10b981;
+}
+
+.telemarketing-content .kpi-change.negative {
+    color: #ef4444;
+}
+
+/* Charts Section */
+.telemarketing-content .charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.telemarketing-content .chart-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.telemarketing-content .chart-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0 0 1.5rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .chart-container {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Bar Chart */
+.telemarketing-content .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    gap: 1rem;
+    padding: 1rem 0;
+    min-width: 0;
+}
+
+.telemarketing-content .bar-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.telemarketing-content .bar {
+    width: 100%;
+    background: linear-gradient(180deg, var(--purple-text) 0%, var(--light-purple) 100%);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    min-height: 20px;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0.5rem;
+}
+
+.telemarketing-content .bar:hover {
+    opacity: 0.9;
+}
+
+.telemarketing-content .bar-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .bar-label {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin-top: 0.5rem;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+/* Table Section */
+.telemarketing-content .table-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.telemarketing-content .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black-color);
+    margin: 0 0 1.5rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .table-wrapper {
+    overflow-x: auto;
+}
+
+.telemarketing-content .agent-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .agent-table thead {
+    background: var(--purple-background);
+}
+
+.telemarketing-content .agent-table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--black-color);
+    border-bottom: 2px solid rgba(69, 51, 184, 0.2);
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .agent-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 14px;
+    color: var(--nav-text);
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .agent-table tbody tr:hover {
+    background: rgba(69, 51, 184, 0.05);
+}
+
+.telemarketing-content .agent-name {
+    font-weight: 600;
+    color: var(--black-color);
+}
+
+/* Upload Section */
+.telemarketing-content .upload-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.telemarketing-content .upload-description {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .upload-dropzone {
+    border: 2px dashed #e5e5e5;
+    border-radius: 15px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--purple-background);
+}
+
+.telemarketing-content .upload-dropzone:hover {
+    border-color: var(--purple-text);
+    background: rgba(69, 51, 184, 0.05);
+}
+
+.telemarketing-content .upload-icon {
+    font-size: 48px;
+    margin-bottom: 1rem;
+}
+
+.telemarketing-content .upload-text {
+    font-size: 16px;
+    color: var(--black-color);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+}
+
+.telemarketing-content .upload-hint {
+    font-size: 14px;
+    color: var(--nav-text);
+    margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .telemarketing-content .charts-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .telemarketing-dashboard {
+        flex-direction: column;
+        margin-top: -122px;
+    }
+
+    .telemarketing-sidebar {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        position: relative;
+        left: 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(69, 51, 184, 0.1);
+        padding: 1rem 0;
+        z-index: 1;
+    }
+
+    .telemarketing-sidebar .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0 1rem;
+    }
+
+    .telemarketing-sidebar .nav-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .telemarketing-main {
+        margin-left: 0;
+        padding: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .telemarketing-content .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .telemarketing-content .dashboard-title {
+        font-size: 28px;
+    }
+
+    .telemarketing-content .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .telemarketing-dashboard {
+        margin-top: -112px;
+    }
+
+    .telemarketing-main {
+        padding: 1rem;
+        padding-top: 1rem;
+    }
+
+    .telemarketing-content .dashboard-title {
+        font-size: 24px;
+    }
+
+    .telemarketing-content .kpi-value {
+        font-size: 28px;
+    }
+
+    .telemarketing-content .chart-container {
+        height: 200px;
+    }
+
+    .telemarketing-content .agent-table {
+        font-size: 12px;
+    }
+
+    .telemarketing-content .agent-table th,
+    .telemarketing-content .agent-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+

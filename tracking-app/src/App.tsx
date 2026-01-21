@@ -15,6 +15,10 @@ import { Login } from './Components/Code/Login-Register/Login'
 import { Register } from './Components/Code/Login-Register/Register'
 import { Authentication } from './Components/Code/Login-Register/Authentication'
 import { Forgotpass } from './Components/Code/Login-Register/Forgotpass'
+import { Sales } from './Components/Code/Dashboards/Sales'
+import { Telemarketing } from './Components/Code/Dashboards/Telemarketing'
+import { RealEstate } from './Components/Code/Dashboards/RealEstate'
+import { Agency } from './Components/Code/Dashboards/Agency'
 
 function App() {
   const [isBannerHidden, setIsBannerHidden] = useState(false);
@@ -39,6 +43,10 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/authentication" element={<Authentication />} />
       <Route path="/forgot-password" element={<Forgotpass />} />
+      <Route path="/sales" element={<Sales />} />
+      <Route path="/telemarketing" element={<Telemarketing />} />
+      <Route path="/real-estate" element={<RealEstate />} />
+      <Route path="/agency" element={<Agency />} />
     </Routes>
   )
 }
