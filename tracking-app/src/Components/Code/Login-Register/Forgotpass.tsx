@@ -1,13 +1,32 @@
 import { useState } from 'react';
 import '../../Style/Login style/Forgotpass.css';
+import { apiClient } from '../../../services/api';
 
 export function Forgotpass() {
     const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle forgot password logic here
-        console.log('Email:', email);
+        setLoading(true);
+        setMessage(null);
+
+        try {
+            const response = await apiClient.forgotPassword(email);
+            setMessage({
+                type: 'success',
+                text: response.message || 'Password reset instructions sent to your email'
+            });
+            setEmail(''); // Clear email after successful submission
+        } catch (error) {
+            setMessage({
+                type: 'error',
+                text: error instanceof Error ? error.message : 'An error occurred. Please try again.'
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -17,6 +36,12 @@ export function Forgotpass() {
                 <h2 className="forgotpass-title">Forgot your password</h2>
                 
                 <form className="forgotpass-form" onSubmit={handleSubmit}>
+                    {message && (
+                        <div className={`forgotpass-message ${message.type === 'success' ? 'success' : 'error'}`}>
+                            {message.text}
+                        </div>
+                    )}
+                    
                     <div className="form-group">
                         <input
                             type="email"
@@ -26,11 +51,12 @@ export function Forgotpass() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            disabled={loading}
                         />
                     </div>
 
-                    <button type="submit" className="forgotpass-button">
-                        Send
+                    <button type="submit" className="forgotpass-button" disabled={loading}>
+                        {loading ? 'Sending...' : 'Send'}
                     </button>
                 </form>
 

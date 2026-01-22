@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
-const { sendVerificationCode } = require('../utils/emailService');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const { sendVerificationCode, sendPasswordResetEmail } = require('../utils/emailService');
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -568,12 +570,199 @@ const resendCode = async (req, res) => {
     }
 };
 
+// Forgot Password Controller
+const forgotPassword = async (req, res) => {
+    try {
+        // 1. Merr email nga request body
+        const { email } = req.body;
+
+        // 2. Validim i email-it
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required'
+            });
+        }
+
+        // Validim i formatit të email-it
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email format'
+            });
+        }
+
+        // 3. Gjej user-in në databazë me email
+        const user = await User.findOne({ email: email.toLowerCase().trim() })
+            .select('+resetPasswordToken'); // Include resetPasswordToken field
+
+        // 4. Nëse user nuk ekziston, kthej mesazh të përgjithshëm (për siguri)
+        // Nuk duhet të tregojmë nëse email-i ekziston apo jo
+        if (!user) {
+            // Kthej mesazh suksesi edhe nëse user nuk ekziston (security best practice)
+            return res.status(200).json({
+                success: true,
+                message: 'If an account with that email exists, password reset instructions have been sent'
+            });
+        }
+
+        // 5. Gjenero token unik 64 karaktere hex
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        // 6. Hash-on token-in me bcrypt para se ta ruajmë në databazë
+        const salt = await bcrypt.genSalt(10);
+        const hashedToken = await bcrypt.hash(resetToken, salt);
+
+        // 7. Vendos kohën e skadimit (1 orë nga tani)
+        const resetPasswordExpires = new Date();
+        resetPasswordExpires.setHours(resetPasswordExpires.getHours() + 1);
+
+        // 8. Ruaj token-in e hash-uar dhe expiry time në databazë
+        user.resetPasswordToken = hashedToken;
+        user.resetPasswordExpires = resetPasswordExpires;
+        await user.save();
+
+        // 9. Merr frontend URL nga environment variables (ose përdor default)
+        const frontendUrl = process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5173';
+
+        // 10. Dërgo email me link për reset password
+        try {
+            await sendPasswordResetEmail(user.email, resetToken, frontendUrl);
+        } catch (emailError) {
+            console.error('Error sending password reset email:', emailError);
+            // Nëse dërgimi i email-it dështon, fshi token dhe expiry time
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send password reset email. Please try again.'
+            });
+        }
+
+        // 11. Kthej përgjigje suksesi
+        res.status(200).json({
+            success: true,
+            message: 'If an account with that email exists, password reset instructions have been sent'
+        });
+
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during forgot password request',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+// Reset Password Controller
+const resetPassword = async (req, res) => {
+    try {
+        // 1. Merr të dhënat nga request body
+        const { token, password, confirmPassword } = req.body;
+
+        // 2. Validim i të dhënave
+        if (!token || !password || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token, password, and confirm password are required'
+            });
+        }
+
+        // Validim i gjatësisë së password-it
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 6 characters'
+            });
+        }
+
+        // Kontrollo nëse password dhe confirmPassword përputhen
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Passwords do not match'
+            });
+        }
+
+        // 3. Gjej user-in me token valid dhe që nuk ka skaduar
+        // Token-i është i hash-uar në databazë, kështu që duhet të kontrollojmë me bcrypt.compare
+        // Gjej të gjithë user-at që kanë resetPasswordToken dhe resetPasswordExpires > tani
+        const users = await User.find({
+            resetPasswordToken: { $exists: true },
+            resetPasswordExpires: { $gt: new Date() }
+        }).select('+resetPasswordToken');
+
+        // 4. Kontrollo nëse token-i përputhet me ndonjë user
+        let user = null;
+        for (const u of users) {
+            if (u.resetPasswordToken) {
+                const isTokenValid = await bcrypt.compare(token, u.resetPasswordToken);
+                if (isTokenValid) {
+                    user = u;
+                    break;
+                }
+            }
+        }
+
+        // 5. Nëse nuk gjendet user me token valid ose token-i ka skaduar, kthej gabim
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset token. Please request a new password reset link.'
+            });
+        }
+
+        // Kontrollo sërish expiry time për siguri (edge case: nëse ka ndryshuar midis query dhe kontrollit)
+        if (!user.resetPasswordExpires || new Date() > user.resetPasswordExpires) {
+            // Fshi token-in e skaduar
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+            
+            return res.status(400).json({
+                success: false,
+                message: 'Reset token has expired. Please request a new password reset link.'
+            });
+        }
+
+        // 6. Token-i është valid dhe nuk ka skaduar - përditëso password-in
+        // Password-i do të hash-ohët automatikisht nga pre-save hook në User model
+        user.password = password;
+        
+        // 7. Fshi token-in dhe expiry time (token-i është përdorur)
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        
+        // 8. Ruaj ndryshimet në databazë (password-i hash-ohet automatikisht)
+        await user.save();
+
+        // 9. Kthej përgjigje suksesi
+        res.status(200).json({
+            success: true,
+            message: 'Password has been reset successfully. You can now login with your new password.'
+        });
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during password reset',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     checkEmail,
     checkUsername,
     verifyCode,
-    resendCode
+    resendCode,
+    forgotPassword,
+    resetPassword
 };
 

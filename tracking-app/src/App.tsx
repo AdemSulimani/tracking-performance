@@ -15,6 +15,7 @@ import { Login } from './Components/Code/Login-Register/Login'
 import { Register } from './Components/Code/Login-Register/Register'
 import { Authentication } from './Components/Code/Login-Register/Authentication'
 import { Forgotpass } from './Components/Code/Login-Register/Forgotpass'
+import { ResetPassword } from './Components/Code/Login-Register/ResetPassword'
 import { Sales } from './Components/Code/Dashboards/Sales'
 import { Telemarketing } from './Components/Code/Dashboards/Telemarketing'
 import { RealEstate } from './Components/Code/Dashboards/RealEstate'
@@ -105,6 +106,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/authentication" element={<Authentication />} />
       <Route path="/forgot-password" element={<Forgotpass />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route 
         path="/sales" 
         element={

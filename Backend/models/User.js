@@ -70,6 +70,14 @@ const userSchema = new mongoose.Schema({
     isVerified: {
         type: Boolean,
         default: false
+    },
+    resetPasswordToken: {
+        type: String,
+        trim: true,
+        select: false // Don't return reset token by default in queries
+    },
+    resetPasswordExpires: {
+        type: Date
     }
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt

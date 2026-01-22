@@ -58,6 +58,21 @@ const resendCodeLimiter = rateLimit({
     skipFailedRequests: false
 });
 
+// Rate limiter for forgot password attempts
+// Prevents abuse of forgot password functionality
+const forgotPasswordLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // Limit each IP to 3 forgot password requests per hour
+    message: {
+        success: false,
+        message: 'Too many forgot password attempts from this IP, please try again after 1 hour'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: false, // Count all requests
+    skipFailedRequests: false
+});
+
 // General API rate limiter
 // Protects all API endpoints
 const apiLimiter = rateLimit({
@@ -71,11 +86,28 @@ const apiLimiter = rateLimit({
     legacyHeaders: false
 });
 
+// Rate limiter for reset password attempts
+// Prevents abuse of reset password functionality
+const resetPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 reset password attempts per 15 minutes
+    message: {
+        success: false,
+        message: 'Too many reset password attempts from this IP, please try again after 15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // Don't count successful requests
+    skipFailedRequests: false
+});
+
 module.exports = {
     loginLimiter,
     registerLimiter,
     verifyCodeLimiter,
     resendCodeLimiter,
+    forgotPasswordLimiter,
+    resetPasswordLimiter,
     apiLimiter
 };
 

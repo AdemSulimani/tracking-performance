@@ -206,6 +206,30 @@ class ApiClient {
         };
     }
 
+    async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+        const response = await this.request<{ success: boolean; message: string }>('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+        });
+
+        return {
+            success: response.success,
+            message: response.message || 'Password reset instructions sent to your email'
+        };
+    }
+
+    async resetPassword(token: string, password: string, confirmPassword: string): Promise<{ success: boolean; message: string }> {
+        const response = await this.request<{ success: boolean; message: string }>('/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ token, password, confirmPassword }),
+        });
+
+        return {
+            success: response.success,
+            message: response.message || 'Password has been reset successfully'
+        };
+    }
+
     // Logout
     logout(): void {
         localStorage.removeItem('token');

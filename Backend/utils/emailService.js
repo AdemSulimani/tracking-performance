@@ -79,7 +79,79 @@ const sendVerificationCode = async (email, verificationCode) => {
     }
 };
 
+// Send password reset email
+const sendPasswordResetEmail = async (email, resetToken, frontendUrl) => {
+    try {
+        const transporter = createTransporter();
+        
+        if (!transporter) {
+            throw new Error('Email transporter not configured');
+        }
+
+        // Construct reset password URL
+        const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: email,
+            subject: 'Reset Your Password',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #333; text-align: center;">Reset Your Password</h2>
+                    <p style="color: #666; font-size: 16px;">Hello,</p>
+                    <p style="color: #666; font-size: 16px;">
+                        You requested to reset your password. Click the button below to reset it:
+                    </p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${resetUrl}" 
+                           style="background-color: #4533b8; color: white; padding: 14px 28px; 
+                                  text-decoration: none; border-radius: 8px; font-weight: 600; 
+                                  display: inline-block; font-size: 16px;">
+                            Reset Password
+                        </a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">
+                        Or copy and paste this link into your browser:
+                    </p>
+                    <p style="color: #4533b8; font-size: 12px; word-break: break-all; background-color: #f4f4f4; 
+                              padding: 10px; border-radius: 4px;">
+                        ${resetUrl}
+                    </p>
+                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                        This link will expire in 1 hour.
+                    </p>
+                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                        If you didn't request a password reset, please ignore this email. Your password will remain unchanged.
+                    </p>
+                </div>
+            `,
+            text: `
+                Reset Your Password
+                
+                Hello,
+                
+                You requested to reset your password. Click the link below to reset it:
+                
+                ${resetUrl}
+                
+                This link will expire in 1 hour.
+                
+                If you didn't request a password reset, please ignore this email. Your password will remain unchanged.
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Password reset email sent:', info.messageId);
+        return { success: true, messageId: info.messageId };
+
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        throw new Error('Failed to send password reset email');
+    }
+};
+
 module.exports = {
-    sendVerificationCode
+    sendVerificationCode,
+    sendPasswordResetEmail
 };
 
