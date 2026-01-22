@@ -13,6 +13,7 @@ interface ApiResponse<T> {
     token?: string;
     user?: User;
     errors?: string[];
+    requiresVerification?: boolean;
 }
 
 interface User {
@@ -25,11 +26,17 @@ interface User {
 }
 
 interface LoginResponse {
+    token?: string;
+    user: User;
+    requiresVerification?: boolean;
+}
+
+interface RegisterResponse {
     token: string;
     user: User;
 }
 
-interface RegisterResponse {
+interface VerifyCodeResponse {
     token: string;
     user: User;
 }
@@ -112,16 +119,33 @@ class ApiClient {
             body: JSON.stringify({ email, password }),
         });
 
-        // Backend returns token and user directly in response
+        // Nëse përgjigja ka requiresVerification: true OSE nuk ka token, mos ruaj token
+        if (response.requiresVerification === true || !response.token) {
+            // Ruaj email për verifikim (përdoret në Authentication page)
+            localStorage.setItem('pendingVerificationEmail', email);
+            return {
+                user: response.user!,
+                requiresVerification: true,
+            };
+        }
+
+        // Nëse ka token dhe nuk ka requiresVerification, ruaj token dhe user
         if (response.token && response.user) {
             // Store token in localStorage
             localStorage.setItem('token', response.token);
             localStorage.setItem('user', JSON.stringify(response.user));
+            return {
+                token: response.token,
+                user: response.user,
+            };
         }
 
+        // Fallback: nëse nuk ka token, duhet të kërkojë verifikim
+        // Ruaj email për verifikim
+        localStorage.setItem('pendingVerificationEmail', email);
         return {
-            token: response.token!,
             user: response.user!,
+            requiresVerification: true,
         };
     }
 
@@ -147,6 +171,39 @@ class ApiClient {
         );
         // Backend returns available directly in response
         return { available: (response as any).available ?? false };
+    }
+
+    async verifyCode(email: string, code: string): Promise<VerifyCodeResponse> {
+        const response = await this.request<VerifyCodeResponse>('/auth/verify-code', {
+            method: 'POST',
+            body: JSON.stringify({ email, code }),
+        });
+
+        // Backend returns token and user directly in response
+        if (response.token && response.user) {
+            // Store token in localStorage
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            // Fshi pendingVerificationEmail nga localStorage
+            localStorage.removeItem('pendingVerificationEmail');
+        }
+
+        return {
+            token: response.token!,
+            user: response.user!,
+        };
+    }
+
+    async resendCode(email: string): Promise<{ success: boolean; message: string }> {
+        const response = await this.request<{ success: boolean; message: string }>('/auth/resend-code', {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+        });
+
+        return {
+            success: response.success,
+            message: response.message || 'Verification code sent to your email'
+        };
     }
 
     // Logout
@@ -180,5 +237,5 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-export type { User, LoginResponse, RegisterResponse };
+export type { User, LoginResponse, RegisterResponse, VerifyCodeResponse };
 

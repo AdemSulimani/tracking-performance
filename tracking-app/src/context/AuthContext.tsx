@@ -10,6 +10,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
     logout: () => void;
+    getDashboardPath: (companyType: string) => string;
 }
 
 interface RegisterData {
@@ -49,13 +50,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, password: string) => {
         try {
             const response = await apiClient.login(email, password);
-            setUser(response.user);
-            // Redirect to user's dashboard based on company type
-            const dashboardPath = getDashboardPath(response.user.companyType);
-            // 2 second delay to show loading spinner
-            setTimeout(() => {
-                window.location.href = dashboardPath;
-            }, 2000);
+            
+            // Nëse përgjigja ka requiresVerification: true, ridrejto në Authentication
+            if (response.requiresVerification === true) {
+                // Mos ruaj token në localStorage (tashmë bëhet në api.ts)
+                // Ruaj email në localStorage për verifikim (tashmë bëhet në api.ts)
+                // Ridrejto në Authentication page
+                setTimeout(() => {
+                    window.location.href = '/authentication';
+                }, 1000);
+                return;
+            }
+
+            // Nëse nuk ka requiresVerification dhe ka token, ruaj token dhe redirect në dashboard
+            if (response.token && response.user) {
+                setUser(response.user);
+                // Redirect to user's dashboard based on company type
+                const dashboardPath = getDashboardPath(response.user.companyType);
+                // 2 second delay to show loading spinner
+                setTimeout(() => {
+                    window.location.href = dashboardPath;
+                }, 2000);
+            } else {
+                // Nëse nuk ka token, duhet të shkojë në authentication
+                setTimeout(() => {
+                    window.location.href = '/authentication';
+                }, 1000);
+            }
         } catch (error) {
             throw error;
         }
@@ -87,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 login,
                 register,
                 logout,
+                getDashboardPath,
             }}
         >
             {children}

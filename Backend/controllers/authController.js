@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
+const { sendVerificationCode } = require('../utils/emailService');
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -204,13 +205,40 @@ const login = async (req, res) => {
             });
         }
 
-        // 6. Nëse përputhen, kthej sukses (dhe JWT token)
-        const token = generateToken(user._id);
+        // 6. Nëse përputhen, gjenero kod verifikimi 6-shifror (random)
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // 7. Vendos kohën e skadimit (15 minuta nga tani)
+        const verificationCodeExpires = new Date();
+        verificationCodeExpires.setMinutes(verificationCodeExpires.getMinutes() + 15);
 
+        // 8. Ruaj kod verifikimi në databazë
+        user.verificationCode = verificationCode;
+        user.verificationCodeExpires = verificationCodeExpires;
+        user.isVerified = false;
+        await user.save();
+
+        // 9. Dërgo kod verifikimi në email
+        try {
+            await sendVerificationCode(user.email, verificationCode);
+        } catch (emailError) {
+            console.error('Error sending verification email:', emailError);
+            // Nëse dërgimi i email-it dështon, fshi kod verifikimi dhe kthej gabim
+            user.verificationCode = undefined;
+            user.verificationCodeExpires = undefined;
+            await user.save();
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send verification code. Please try again.'
+            });
+        }
+
+        // 10. Kthej përgjigje me requiresVerification: true (pa token)
         res.status(200).json({
             success: true,
-            message: 'Login successful',
-            token,
+            message: 'Verification code sent to your email',
+            requiresVerification: true,
             user: {
                 id: user._id,
                 companyType: user.companyType,
@@ -352,10 +380,200 @@ const checkUsername = async (req, res) => {
     }
 };
 
+// Verify Code Controller
+const verifyCode = async (req, res) => {
+    try {
+        // 1. Merr të dhënat (email/name dhe code) nga request body
+        const { email, name, identifier, code } = req.body;
+
+        // Përdor identifier, email, ose name (në këtë renditje)
+        const loginIdentifier = identifier || email || name;
+
+        // Validation
+        if (!loginIdentifier || !code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email/name and verification code are required'
+            });
+        }
+
+        // Validim i kodit (duhet të jetë 6 shifra)
+        if (!/^\d{6}$/.test(code)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Verification code must be 6 digits'
+            });
+        }
+
+        // 2. Gjej user-in në databazë me name ose email (duhet të përfshijë verificationCode)
+        let user;
+        const trimmedIdentifier = loginIdentifier.trim();
+
+        // Kontrollo nëse identifier-i është email
+        if (validator.isEmail(trimmedIdentifier)) {
+            // Nëse është email, kërko me email
+            user = await User.findOne({ email: trimmedIdentifier.toLowerCase() })
+                .select('+verificationCode');
+        } else {
+            // Nëse nuk është email, kërko me name (case-insensitive)
+            user = await User.findOne({
+                name: { $regex: new RegExp(`^${trimmedIdentifier}$`, 'i') }
+            }).select('+verificationCode');
+        }
+
+        // 3. Nëse nuk gjendet user, kthej gabim
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid verification code'
+            });
+        }
+
+        // 4. Kontrollo nëse kodi përputhet me verificationCode
+        if (!user.verificationCode || user.verificationCode !== code) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid verification code'
+            });
+        }
+
+        // 5. Kontrollo nëse kodi nuk ka skaduar (verificationCodeExpires)
+        if (!user.verificationCodeExpires || new Date() > user.verificationCodeExpires) {
+            // Fshi kod verifikimi të skaduar
+            user.verificationCode = undefined;
+            user.verificationCodeExpires = undefined;
+            await user.save();
+
+            return res.status(401).json({
+                success: false,
+                message: 'Verification code has expired. Please login again.'
+            });
+        }
+
+        // 6. Nëse është valid: Fshi verificationCode dhe verificationCodeExpires
+        user.verificationCode = undefined;
+        user.verificationCodeExpires = undefined;
+        user.isVerified = true;
+        await user.save();
+
+        // 7. Krijo JWT token
+        const token = generateToken(user._id);
+
+        // 8. Kthe token dhe të dhënat e user-it
+        res.status(200).json({
+            success: true,
+            message: 'Verification successful',
+            token,
+            user: {
+                id: user._id,
+                companyType: user.companyType,
+                name: user.name,
+                lastname: user.lastname,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+        console.error('Verify code error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during code verification',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+// Resend Code Controller
+const resendCode = async (req, res) => {
+    try {
+        // 1. Merr të dhënat (email/name) nga request body
+        const { email, name, identifier } = req.body;
+
+        // Përdor identifier, email, ose name (në këtë renditje)
+        const loginIdentifier = identifier || email || name;
+
+        // Validation
+        if (!loginIdentifier) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email/name is required'
+            });
+        }
+
+        // 2. Gjej user-in në databazë me name ose email
+        let user;
+        const trimmedIdentifier = loginIdentifier.trim();
+
+        // Kontrollo nëse identifier-i është email
+        if (validator.isEmail(trimmedIdentifier)) {
+            // Nëse është email, kërko me email
+            user = await User.findOne({ email: trimmedIdentifier.toLowerCase() });
+        } else {
+            // Nëse nuk është email, kërko me name (case-insensitive)
+            user = await User.findOne({
+                name: { $regex: new RegExp(`^${trimmedIdentifier}$`, 'i') }
+            });
+        }
+
+        // 3. Nëse nuk gjendet user, kthej gabim
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // 4. Gjenero kod verifikimi të ri 6-shifror
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // 5. Vendos kohën e skadimit (15 minuta nga tani)
+        const verificationCodeExpires = new Date();
+        verificationCodeExpires.setMinutes(verificationCodeExpires.getMinutes() + 15);
+
+        // 6. Ruaj kod verifikimi të ri në databazë
+        user.verificationCode = verificationCode;
+        user.verificationCodeExpires = verificationCodeExpires;
+        user.isVerified = false;
+        await user.save();
+
+        // 7. Dërgo kod verifikimi të ri në email
+        try {
+            await sendVerificationCode(user.email, verificationCode);
+        } catch (emailError) {
+            console.error('Error sending verification email:', emailError);
+            // Nëse dërgimi i email-it dështon, fshi kod verifikimi dhe kthej gabim
+            user.verificationCode = undefined;
+            user.verificationCodeExpires = undefined;
+            await user.save();
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send verification code. Please try again.'
+            });
+        }
+
+        // 8. Kthej përgjigje suksesi
+        res.status(200).json({
+            success: true,
+            message: 'Verification code sent to your email'
+        });
+
+    } catch (error) {
+        console.error('Resend code error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during resend code',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     checkEmail,
-    checkUsername
+    checkUsername,
+    verifyCode,
+    resendCode
 };
 

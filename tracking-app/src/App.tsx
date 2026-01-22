@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
 import { Banner } from './Components/Code/Landing Page/Banner'
 import { Header } from './Components/Code/Landing Page/Header'
@@ -23,6 +23,67 @@ import { ProtectedRoute } from './Components/ProtectedRoute'
 
 function App() {
   const [isBannerHidden, setIsBannerHidden] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [pendingUserEmail, setPendingUserEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Kontrollo nëse ka token ose pendingVerificationEmail në localStorage
+  useEffect(() => {
+    // Kontrollo nëse ka token → user është i autentifikuar
+    const token = localStorage.getItem('token');
+    
+    // Kontrollo nëse ka pendingVerificationEmail në localStorage
+    const pendingEmail = localStorage.getItem('pendingVerificationEmail');
+    
+    // Nëse ka pendingVerificationEmail, duhet të shkojë në authentication (edhe nëse ka token të vjetër)
+    if (pendingEmail) {
+      // Nëse ka pendingVerificationEmail, vendos needsVerification = true
+      setNeedsVerification(true);
+      setPendingUserEmail(pendingEmail);
+      
+      // Nëse jemi në /authentication, mos bëj asgjë
+      if (location.pathname === '/authentication') {
+        return;
+      }
+      
+      // Nëse nuk jemi në /authentication, ridrejto atje
+      if (location.pathname !== '/login' && 
+          location.pathname !== '/register' &&
+          location.pathname !== '/forgot-password' &&
+          location.pathname !== '/') {
+        navigate('/authentication', { replace: true });
+      }
+    } else if (token) {
+      // Nëse ka token dhe NUK ka pendingVerificationEmail, user është i autentifikuar plotësisht
+      setNeedsVerification(false);
+      setPendingUserEmail(null);
+      
+      // Nëse jemi në /authentication dhe kemi token (por nuk ka pendingEmail), ridrejto në dashboard
+      if (location.pathname === '/authentication') {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            const dashboardMap: Record<string, string> = {
+              'sales': '/sales',
+              'real-estate': '/real-estate',
+              'telemarketing': '/telemarketing',
+              'agency': '/agency'
+            };
+            const dashboardPath = dashboardMap[user.companyType] || '/';
+            navigate(dashboardPath, { replace: true });
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+          }
+        }
+      }
+    } else {
+      // Nëse nuk ka as token as pendingEmail, reset state
+      setNeedsVerification(false);
+      setPendingUserEmail(null);
+    }
+  }, [location.pathname, navigate]);
 
   return (
     <Routes>

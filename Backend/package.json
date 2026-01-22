@@ -25,6 +25,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.1.5",
+    "nodemailer": "^7.0.12",
     "validator": "^13.11.0"
   },
   "devDependencies": {
