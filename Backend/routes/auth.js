@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, checkEmail, checkUsername } = require('../controllers/authController');
-const { loginLimiter, registerLimiter } = require('../middleware/rateLimiter');
+const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword } = require('../controllers/authController');
+const { loginLimiter, registerLimiter, verifyCodeLimiter, resendCodeLimiter, forgotPasswordLimiter, resetPasswordLimiter } = require('../middleware/rateLimiter');
 const { sanitizeInput } = require('../middleware/inputSanitizer');
 
 // Apply input sanitization to all routes
@@ -15,11 +15,27 @@ router.post('/register', registerLimiter, register);
 // Rate limited: 5 attempts per 15 minutes per IP
 router.post('/login', loginLimiter, login);
 
+// POST /api/auth/verify-code — për verifikim të kodit
+// Rate limited: 5 attempts per 15 minutes per IP
+router.post('/verify-code', verifyCodeLimiter, verifyCode);
+
+// POST /api/auth/resend-code — për dërgim të kodit të ri
+// Rate limited: 3 attempts per 15 minutes per IP
+router.post('/resend-code', resendCodeLimiter, resendCode);
+
 // GET /api/auth/check-email/:email — për kontroll të email-it (opsionale)
 router.get('/check-email/:email', checkEmail);
 
 // GET /api/auth/check-username/:username — për kontroll të username-it
 router.get('/check-username/:username', checkUsername);
+
+// POST /api/auth/forgot-password — për kërkim të reset password
+// Rate limited: 3 attempts per hour per IP
+router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
+
+// POST /api/auth/reset-password — për reset password me token
+// Rate limited: 5 attempts per 15 minutes per IP
+router.post('/reset-password', resetPasswordLimiter, resetPassword);
 
 module.exports = router;
 

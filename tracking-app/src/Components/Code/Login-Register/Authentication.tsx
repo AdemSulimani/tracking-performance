@@ -1,9 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
+import { apiClient } from '../../../services/api';
+import { useAuth } from '../../../context/AuthContext';
 import '../../Style/Login style/Authentication.css';
 
 export function Authentication() {
     const [codes, setCodes] = useState<string[]>(['', '', '', '', '', '']);
+    const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const { getDashboardPath } = useAuth();
 
     const handleChange = (index: number, value: string) => {
         // Only allow single digit
@@ -45,22 +51,98 @@ export function Authentication() {
         inputRefs.current[lastFilledIndex]?.focus();
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const code = codes.join('');
-        if (code.length === 6) {
-            // Handle authentication logic here
-            console.log('Code:', code);
+        
+        if (code.length !== 6) {
+            return;
+        }
+
+        setError('');
+        setIsLoading(true);
+
+        try {
+            // Merr email nga localStorage
+            const email = localStorage.getItem('pendingVerificationEmail');
+            
+            if (!email) {
+                setError('Email not found. Please login again.');
+                setIsLoading(false);
+                return;
+            }
+
+            // Bëj request në /api/auth/verify-code
+            const response = await apiClient.verifyCode(email, code);
+
+            // Nëse sukses: token dhe user janë ruajtur tashmë në api.ts
+            // Fshi pendingUserEmail nga localStorage (bëhet tashmë në api.ts)
+            
+            // Ridrejto në dashboard bazuar në companyType
+            const dashboardPath = getDashboardPath(response.user.companyType);
+            
+            // 2 second delay për të treguar sukses
+            setTimeout(() => {
+                window.location.href = dashboardPath;
+            }, 2000);
+
+        } catch (err) {
+            // Nëse gabim: shfaq mesazh gabimi
+            setError(err instanceof Error ? err.message : 'Verification failed. Please try again.');
+            setIsLoading(false);
+            // Reset codes për të lejuar përdoruesin të provojë përsëri
+            setCodes(['', '', '', '', '', '']);
+            inputRefs.current[0]?.focus();
         }
     };
 
-    const handleResend = () => {
-        // Handle resend code logic here
-        setCodes(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
+    const handleResend = async () => {
+        setError('');
+        setSuccessMessage('');
+        setIsLoading(true);
+
+        try {
+            // Merr email nga localStorage
+            const email = localStorage.getItem('pendingVerificationEmail');
+            
+            if (!email) {
+                setError('Email not found. Please login again.');
+                setIsLoading(false);
+                return;
+            }
+
+            // Bëj request në /api/auth/resend-code
+            const response = await apiClient.resendCode(email);
+
+            if (response.success) {
+                // Nëse sukses, reset codes dhe fokus në input-in e parë
+                setCodes(['', '', '', '', '', '']);
+                inputRefs.current[0]?.focus();
+                setSuccessMessage('New verification code sent to your email');
+                // Fshi success message pas 5 sekondave
+                setTimeout(() => {
+                    setSuccessMessage('');
+                }, 5000);
+            } else {
+                setError(response.message || 'Failed to resend code. Please try again.');
+            }
+        } catch (err) {
+            // Nëse gabim: shfaq mesazh gabimi
+            setError(err instanceof Error ? err.message : 'Failed to resend code. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
+        // Kontrollo nëse ka pendingVerificationEmail në localStorage
+        const pendingEmail = localStorage.getItem('pendingVerificationEmail');
+        if (!pendingEmail) {
+            // Nëse nuk ka email, ridrejto në login
+            window.location.href = '/login';
+            return;
+        }
+        
         // Focus first input on mount
         inputRefs.current[0]?.focus();
     }, []);
@@ -69,6 +151,32 @@ export function Authentication() {
         <div className="authentication-container">
             <div className="authentication-form-wrapper">
                 <h2 className="authentication-title">Enter your code that was sent to your email</h2>
+                
+                {error && (
+                    <div style={{ 
+                        color: 'red', 
+                        marginBottom: '1rem', 
+                        padding: '0.75rem', 
+                        backgroundColor: '#fee', 
+                        borderRadius: '4px',
+                        fontSize: '0.9rem'
+                    }}>
+                        {error}
+                    </div>
+                )}
+                
+                {successMessage && (
+                    <div style={{ 
+                        color: 'green', 
+                        marginBottom: '1rem', 
+                        padding: '0.75rem', 
+                        backgroundColor: '#efe', 
+                        borderRadius: '4px',
+                        fontSize: '0.9rem'
+                    }}>
+                        {successMessage}
+                    </div>
+                )}
                 
                 <form className="authentication-form" onSubmit={handleSubmit}>
                     <div className="code-inputs-container">
@@ -94,9 +202,9 @@ export function Authentication() {
                     <button 
                         type="submit" 
                         className="authentication-button"
-                        disabled={codes.join('').length !== 6}
+                        disabled={codes.join('').length !== 6 || isLoading}
                     >
-                        Verify Code
+                        {isLoading ? 'Verifying...' : 'Verify Code'}
                     </button>
                 </form>
 
@@ -106,8 +214,9 @@ export function Authentication() {
                         type="button" 
                         className="resend-button"
                         onClick={handleResend}
+                        disabled={isLoading}
                     >
-                        Resend code
+                        {isLoading ? 'Sending...' : 'Resend code'}
                     </button>
                 </div>
             </div>

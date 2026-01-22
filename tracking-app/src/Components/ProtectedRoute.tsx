@@ -27,6 +27,14 @@ export function ProtectedRoute({ children, requiredCompanyType }: ProtectedRoute
         return <LoadingSpinner />;
     }
 
+    // Kontrollo nëse ka pendingVerificationEmail në localStorage
+    const pendingVerificationEmail = localStorage.getItem('pendingVerificationEmail');
+    
+    // Nëse ka pendingVerificationEmail dhe nuk ka token, ridrejto në /authentication
+    if (pendingVerificationEmail && !isAuthenticated) {
+        return <Navigate to="/authentication" replace />;
+    }
+
     // Redirect to login if not authenticated
     if (!isAuthenticated || !user) {
         return <Navigate to="/login" replace />;

@@ -58,6 +58,26 @@ const userSchema = new mongoose.Schema({
         minlength: [6, 'Password must be at least 6 characters'],
         maxlength: [100, 'Password cannot exceed 100 characters'],
         select: false // Don't return password by default in queries
+    },
+    verificationCode: {
+        type: String,
+        trim: true,
+        select: false // Don't return verification code by default in queries
+    },
+    verificationCodeExpires: {
+        type: Date
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    resetPasswordToken: {
+        type: String,
+        trim: true,
+        select: false // Don't return reset token by default in queries
+    },
+    resetPasswordExpires: {
+        type: Date
     }
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt
