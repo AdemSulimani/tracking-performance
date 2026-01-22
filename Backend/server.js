@@ -30,10 +30,38 @@ const securityMiddleware = require('./middleware/security');
 app.use(securityMiddleware);
 
 // CORS Configuration
-app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true
-}));
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // In development, allow all localhost origins
+        if (process.env.NODE_ENV !== 'production') {
+            // Allow any localhost origin in development
+            if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+                return callback(null, true);
+            }
+        }
+        
+        // In production, use specific allowed origins
+        const allowedOrigins = [];
+        if (process.env.FRONTEND_URL) {
+            allowedOrigins.push(process.env.FRONTEND_URL);
+        }
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Authorization']
+};
+
+app.use(cors(corsOptions));
 
 // Body Parser Middleware
 // Limit JSON payload size to prevent DoS attacks
@@ -67,7 +95,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 // SECURITY NOTE: In production, use HTTPS
 // Option 1: Use a reverse proxy (nginx, Apache) with SSL certificate
