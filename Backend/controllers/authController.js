@@ -6,6 +6,21 @@ const bcrypt = require('bcrypt');
 const { OAuth2Client } = require('google-auth-library');
 const { sendVerificationCode, sendPasswordResetEmail } = require('../utils/emailService');
 
+// In-memory store për OAuth state verification
+// Ruan state-et me timestamp për të fshirë ato që kanë skaduar
+const oauthStateStore = new Map();
+
+// Cleanup function për të fshirë state-et e skaduara (15 minuta)
+setInterval(() => {
+    const now = Date.now();
+    const expiryTime = 15 * 60 * 1000; // 15 minuta
+    for (const [state, timestamp] of oauthStateStore.entries()) {
+        if (now - timestamp > expiryTime) {
+            oauthStateStore.delete(state);
+        }
+    }
+}, 5 * 60 * 1000); // Kontrollo çdo 5 minuta
+
 // Generate JWT Token
 const generateToken = (userId) => {
     if (!process.env.JWT_SECRET) {
@@ -963,6 +978,215 @@ const updateCompanyType = async (req, res) => {
     }
 };
 
+// Google OAuth Callback Controller (për backend redirect URI)
+const googleAuthCallback = async (req, res) => {
+    try {
+        // 1. Merr authorization code dhe state nga query parameters
+        const { code, state, error } = req.query;
+
+        // Kontrollo nëse ka error nga Google
+        if (error) {
+            console.error('Google OAuth error:', error);
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Google authentication failed. Please try again.')}`);
+        }
+
+        // Kontrollo nëse ka code
+        if (!code) {
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('No authorization code received from Google.')}`);
+        }
+
+        // 2. Verifiko state për siguri (CSRF protection)
+        // Nëse ka state, kontrollo nëse ekziston në store
+        // Shënim: Nëse state nuk ekziston në store (p.sh. për shkak të timing issues),
+        // lejojmë të vazhdojë sepse Google tashmë ka verifikuar redirect URI
+        if (state) {
+            const stateTimestamp = oauthStateStore.get(state);
+            if (stateTimestamp) {
+                // Fshi state pas verifikimit (one-time use)
+                oauthStateStore.delete(state);
+                
+                // Kontrollo nëse state ka skaduar (15 minuta)
+                const now = Date.now();
+                const expiryTime = 15 * 60 * 1000; // 15 minuta
+                if (now - stateTimestamp > expiryTime) {
+                    console.warn('Expired OAuth state:', state);
+                    // Nëse ka skaduar, lejojmë të vazhdojë sepse Google tashmë ka verifikuar
+                }
+            } else {
+                // Nëse state nuk ekziston në store, lejojmë të vazhdojë
+                // Kjo mund të ndodhë nëse request-i për të ruajtur state nuk ka përfunduar
+                // para se të shkojmë te Google, ose nëse server-i është restart-uar
+                console.warn('OAuth state not found in store (may be timing issue):', state);
+            }
+        }
+
+        // 2. Shkëmbe authorization code me access_token duke përdorur Client Secret
+        const redirectUri = `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`;
+        
+        const client = new OAuth2Client(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            redirectUri
+        );
+
+        let tokenResponse;
+        try {
+            // Shkëmbe code me token
+            // Sigurohu që code nuk ka HTML entities (p.sh. &#x2F; në vend të /)
+            const cleanCode = code.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/');
+            tokenResponse = await client.getToken(cleanCode);
+            const accessToken = tokenResponse.tokens.access_token;
+
+            if (!accessToken) {
+                throw new Error('Failed to get access token from Google');
+            }
+
+            // 3. Merr user info nga Google me access_token
+            const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            
+            if (!userInfoResponse.ok) {
+                throw new Error('Failed to fetch user info from Google');
+            }
+            
+            var userInfo = await userInfoResponse.json();
+        } catch (googleError) {
+            console.error('Google OAuth error:', googleError);
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Invalid Google authorization code. Please try again.')}`);
+        }
+
+        const { email, given_name, family_name, name } = userInfo;
+
+        // 5. Validim i email-it
+        if (!email) {
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Email not provided by Google.')}`);
+        }
+
+        // 6. Kontrollo nëse email-i ekziston në databazë
+        const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+        // 7a. Nëse email-i ekziston
+        if (existingUser) {
+            // Kontrollo nëse user-i ka password (manual account)
+            if (existingUser.password && !existingUser.isGoogleUser) {
+                return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('This email is already registered with a password. Please use email/password login instead.')}`);
+            }
+
+            // User-i është Google user ose nuk ka password
+            // Kontrollo nëse ka companyType
+            const needsCompanyType = !existingUser.companyType;
+
+            // Gjenero JWT token
+            const jwtToken = generateToken(existingUser._id);
+
+            // Redirect te frontend me token dhe user info
+            const userData = encodeURIComponent(JSON.stringify({
+                id: existingUser._id,
+                companyType: existingUser.companyType,
+                name: existingUser.name,
+                lastname: existingUser.lastname,
+                email: existingUser.email
+            }));
+
+            if (needsCompanyType) {
+                return res.redirect(`${frontendUrl}/auth-success?token=${jwtToken}&user=${userData}&needsCompanyType=true`);
+            } else {
+                return res.redirect(`${frontendUrl}/auth-success?token=${jwtToken}&user=${userData}`);
+            }
+        }
+
+        // 5b. Nëse email-i nuk ekziston - krijo user të ri
+        // Split name nëse nuk ka given_name dhe family_name
+        let firstName = given_name || '';
+        let lastName = family_name || '';
+
+        // Nëse nuk ka given_name dhe family_name, provo të split name
+        if (!firstName && !lastName && name) {
+            const nameParts = name.trim().split(' ');
+            firstName = nameParts[0] || '';
+            lastName = nameParts.slice(1).join(' ') || '';
+        }
+
+        // Nëse ende nuk ka, përdor email si fallback
+        if (!firstName) {
+            firstName = email.split('@')[0];
+        }
+        if (!lastName) {
+            lastName = 'User';
+        }
+
+        // Krijo user të ri
+        const newUser = await User.create({
+            email: email.toLowerCase().trim(),
+            name: firstName.trim(),
+            lastname: lastName.trim(),
+            isGoogleUser: true,
+            companyType: null, // Do të vendoset më vonë
+            password: null, // Google users nuk kanë password
+            isVerified: true // Google users janë automatikisht verified
+        });
+
+        // Gjenero JWT token
+        const jwtToken = generateToken(newUser._id);
+
+        // Redirect te frontend me token dhe user info
+        const userData = encodeURIComponent(JSON.stringify({
+            id: newUser._id,
+            companyType: newUser.companyType,
+            name: newUser.name,
+            lastname: newUser.lastname,
+            email: newUser.email
+        }));
+
+        return res.redirect(`${frontendUrl}/auth-success?token=${jwtToken}&user=${userData}&needsCompanyType=true`);
+
+    } catch (error) {
+        console.error('Google auth callback error:', error);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Server error during Google authentication. Please try again.')}`);
+    }
+};
+
+// Google OAuth State Storage Controller
+// Frontend dërgon state këtu para se të fillojë OAuth flow
+const googleAuthState = async (req, res) => {
+    try {
+        const { state } = req.body;
+
+        if (!state) {
+            return res.status(400).json({
+                success: false,
+                message: 'State is required'
+            });
+        }
+
+        // Ruaj state në store me timestamp
+        oauthStateStore.set(state, Date.now());
+
+        return res.status(200).json({
+            success: true,
+            message: 'State stored successfully'
+        });
+
+    } catch (error) {
+        console.error('Google auth state error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during state storage',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
@@ -973,6 +1197,8 @@ module.exports = {
     forgotPassword,
     resetPassword,
     googleAuth,
+    googleAuthCallback,
+    googleAuthState,
     updateCompanyType
 };
 

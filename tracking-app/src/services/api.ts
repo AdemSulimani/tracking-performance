@@ -101,7 +101,7 @@ class ApiClient {
         password: string;
         confirmPassword: string;
     }): Promise<RegisterResponse> {
-        const response = await this.request<RegisterResponse>('/auth/register', {
+        const response = await this.request<RegisterResponse>('/api/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
         });
@@ -120,7 +120,7 @@ class ApiClient {
     }
 
     async login(email: string, password: string): Promise<LoginResponse> {
-        const response = await this.request<LoginResponse>('/auth/login', {
+        const response = await this.request<LoginResponse>('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password }),
         });
@@ -158,7 +158,7 @@ class ApiClient {
     async checkEmail(email: string): Promise<{ available: boolean }> {
         const encodedEmail = encodeURIComponent(email);
         const response = await this.request<{ available: boolean }>(
-            `/auth/check-email/${encodedEmail}`,
+            `/api/auth/check-email/${encodedEmail}`,
             {
                 method: 'GET',
             }
@@ -170,7 +170,7 @@ class ApiClient {
     async checkUsername(username: string): Promise<{ available: boolean }> {
         const encodedUsername = encodeURIComponent(username);
         const response = await this.request<{ available: boolean }>(
-            `/auth/check-username/${encodedUsername}`,
+            `/api/auth/check-username/${encodedUsername}`,
             {
                 method: 'GET',
             }
@@ -180,7 +180,7 @@ class ApiClient {
     }
 
     async verifyCode(email: string, code: string): Promise<VerifyCodeResponse> {
-        const response = await this.request<VerifyCodeResponse>('/auth/verify-code', {
+        const response = await this.request<VerifyCodeResponse>('/api/auth/verify-code', {
             method: 'POST',
             body: JSON.stringify({ email, code }),
         });
@@ -201,7 +201,7 @@ class ApiClient {
     }
 
     async resendCode(email: string): Promise<{ success: boolean; message: string }> {
-        const response = await this.request<{ success: boolean; message: string }>('/auth/resend-code', {
+        const response = await this.request<{ success: boolean; message: string }>('/api/auth/resend-code', {
             method: 'POST',
             body: JSON.stringify({ email }),
         });
@@ -213,7 +213,7 @@ class ApiClient {
     }
 
     async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
-        const response = await this.request<{ success: boolean; message: string }>('/auth/forgot-password', {
+        const response = await this.request<{ success: boolean; message: string }>('/api/auth/forgot-password', {
             method: 'POST',
             body: JSON.stringify({ email }),
         });
@@ -225,7 +225,7 @@ class ApiClient {
     }
 
     async resetPassword(token: string, password: string, confirmPassword: string): Promise<{ success: boolean; message: string }> {
-        const response = await this.request<{ success: boolean; message: string }>('/auth/reset-password', {
+        const response = await this.request<{ success: boolean; message: string }>('/api/auth/reset-password', {
             method: 'POST',
             body: JSON.stringify({ token, password, confirmPassword }),
         });
@@ -237,7 +237,7 @@ class ApiClient {
     }
 
     async googleAuth(googleCode: string): Promise<GoogleAuthResponse> {
-        const response = await this.request<GoogleAuthResponse>('/auth/google', {
+        const response = await this.request<GoogleAuthResponse>('/api/auth/google', {
             method: 'POST',
             body: JSON.stringify({ code: googleCode }),
         });
@@ -257,7 +257,7 @@ class ApiClient {
     }
 
     async updateCompanyType(companyType: string): Promise<{ user: User }> {
-        const response = await this.request<{ user: User }>('/auth/update-company-type', {
+        const response = await this.request<{ user: User }>('/api/auth/update-company-type', {
             method: 'POST',
             body: JSON.stringify({ companyType }),
         });
@@ -271,6 +271,13 @@ class ApiClient {
         return {
             user: response.user!,
         };
+    }
+
+    async storeGoogleAuthState(state: string): Promise<void> {
+        await this.request('/api/auth/google/state', {
+            method: 'POST',
+            body: JSON.stringify({ state }),
+        });
     }
 
     // Logout

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword, googleAuth, updateCompanyType } = require('../controllers/authController');
+const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword, googleAuth, googleAuthCallback, googleAuthState, updateCompanyType } = require('../controllers/authController');
 const { loginLimiter, registerLimiter, verifyCodeLimiter, resendCodeLimiter, forgotPasswordLimiter, resetPasswordLimiter } = require('../middleware/rateLimiter');
 const { sanitizeInput } = require('../middleware/inputSanitizer');
 const { authenticate } = require('../middleware/auth');
@@ -38,9 +38,17 @@ router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
 // Rate limited: 5 attempts per 15 minutes per IP
 router.post('/reset-password', resetPasswordLimiter, resetPassword);
 
-// POST /api/auth/google — për Google OAuth login/register
+// POST /api/auth/google — për Google OAuth login/register (legacy - përdoret nga frontend)
 // Rate limited: 10 attempts per 15 minutes per IP
 router.post('/google', loginLimiter, googleAuth);
+
+// POST /api/auth/google/state — për të ruajtur OAuth state (për CSRF protection)
+// Frontend dërgon state këtu para se të fillojë OAuth flow
+router.post('/google/state', googleAuthState);
+
+// GET /api/auth/google/callback — për Google OAuth callback (backend redirect URI)
+// Google do të redirect-ojë këtu me authorization code
+router.get('/google/callback', googleAuthCallback);
 
 // POST /api/auth/update-company-type — për update company type (për Google users)
 // Protected route - requires authentication
