@@ -9,6 +9,8 @@ interface AuthContextType {
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
+    googleAuth: (googleToken: string) => Promise<void>;
+    updateCompanyType: (companyType: string) => Promise<void>;
     logout: () => void;
     getDashboardPath: (companyType: string) => string;
 }
@@ -37,7 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
-    const getDashboardPath = (companyType: string): string => {
+    const getDashboardPath = (companyType: string | null): string => {
+        if (!companyType) {
+            return '/select-company-type';
+        }
         const dashboardMap: Record<string, string> = {
             'sales': '/sales',
             'real-estate': '/real-estate',
@@ -92,6 +97,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const googleAuth = async (googleCode: string) => {
+        try {
+            const response = await apiClient.googleAuth(googleCode);
+            setUser(response.user);
+            
+            // Nëse needsCompanyType === true, redirect në /select-company-type
+            if (response.needsCompanyType) {
+                setTimeout(() => {
+                    window.location.href = '/select-company-type';
+                }, 1000);
+                return;
+            }
+            
+            // Nëse nuk ka nevojë për company type, redirect në dashboard
+            if (response.user.companyType) {
+                const dashboardPath = getDashboardPath(response.user.companyType);
+                setTimeout(() => {
+                    window.location.href = dashboardPath;
+                }, 2000);
+            }
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const updateCompanyType = async (companyType: string) => {
+        try {
+            const response = await apiClient.updateCompanyType(companyType);
+            setUser(response.user);
+            
+            // Pas update, redirect në dashboard bazuar në company type
+            const dashboardPath = getDashboardPath(companyType);
+            setTimeout(() => {
+                window.location.href = dashboardPath;
+            }, 1000);
+        } catch (error) {
+            throw error;
+        }
+    };
+
     const logout = () => {
         apiClient.logout();
         setUser(null);
@@ -107,6 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoading,
                 login,
                 register,
+                googleAuth,
+                updateCompanyType,
                 logout,
                 getDashboardPath,
             }}

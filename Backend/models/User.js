@@ -5,7 +5,10 @@ const validator = require('validator');
 const userSchema = new mongoose.Schema({
     companyType: {
         type: String,
-        required: [true, 'Company type is required'],
+        required: function() {
+            // Company type is required only for manual registration (non-Google users)
+            return !this.isGoogleUser;
+        },
         enum: {
             values: ['sales', 'real-estate', 'telemarketing', 'agency'],
             message: 'Invalid company type. Must be one of: sales, real-estate, telemarketing, agency'
@@ -20,6 +23,10 @@ const userSchema = new mongoose.Schema({
         maxlength: [50, 'Name cannot exceed 50 characters'],
         validate: {
             validator: function(v) {
+                // For Google users, allow more flexible validation
+                if (this.isGoogleUser) {
+                    return v && v.trim().length >= 1;
+                }
                 return /^[a-zA-Z\s'-]+$/.test(v);
             },
             message: 'Name can only contain letters, spaces, hyphens, and apostrophes'
@@ -33,6 +40,10 @@ const userSchema = new mongoose.Schema({
         maxlength: [50, 'Lastname cannot exceed 50 characters'],
         validate: {
             validator: function(v) {
+                // For Google users, allow more flexible validation
+                if (this.isGoogleUser) {
+                    return v && v.trim().length >= 1;
+                }
                 return /^[a-zA-Z\s'-]+$/.test(v);
             },
             message: 'Lastname can only contain letters, spaces, hyphens, and apostrophes'
@@ -54,10 +65,17 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
+        required: function() {
+            // Password is required only for manual registration (non-Google users)
+            return !this.isGoogleUser;
+        },
         minlength: [6, 'Password must be at least 6 characters'],
         maxlength: [100, 'Password cannot exceed 100 characters'],
         select: false // Don't return password by default in queries
+    },
+    isGoogleUser: {
+        type: Boolean,
+        default: false
     },
     verificationCode: {
         type: String,
@@ -87,8 +105,8 @@ const userSchema = new mongoose.Schema({
 
 // Hash password before saving (only if password is modified)
 userSchema.pre('save', async function() {
-    // Only hash the password if it has been modified (or is new)
-    if (!this.isModified('password')) {
+    // Only hash the password if it has been modified (or is new) and exists
+    if (!this.isModified('password') || !this.password) {
         return;
     }
     
