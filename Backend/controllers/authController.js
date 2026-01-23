@@ -1187,6 +1187,29 @@ const googleAuthState = async (req, res) => {
     }
 };
 
+// Delete Account Controller
+const deleteAccount = async (req, res) => {
+    try {
+        // User is already attached to req by authenticate middleware
+        const userId = req.user._id;
+
+        // Delete user from database
+        await User.findByIdAndDelete(userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Account deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Delete account error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while deleting account'
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
@@ -1199,6 +1222,7 @@ module.exports = {
     googleAuth,
     googleAuthCallback,
     googleAuthState,
-    updateCompanyType
+    updateCompanyType,
+    deleteAccount
 };
 

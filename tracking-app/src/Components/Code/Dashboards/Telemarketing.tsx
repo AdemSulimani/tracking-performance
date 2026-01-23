@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import '../../Style/Dashboards style/Telemarketing.css'
+import { useAuth } from '../../../context/AuthContext'
 
 interface Agent {
     name: string
@@ -22,6 +23,51 @@ interface TelemarketingData {
 }
 
 export function Telemarketing() {
+    const { user, logout } = useAuth()
+    const [showUserMenu, setShowUserMenu] = useState(false)
+    const menuRef = useRef<HTMLDivElement>(null)
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowUserMenu(false)
+            }
+        }
+
+        if (showUserMenu) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [showUserMenu])
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            try {
+                const token = localStorage.getItem('token')
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/delete-account`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if (response.ok) {
+                    logout()
+                } else {
+                    const data = await response.json()
+                    alert(data.message || 'Failed to delete account')
+                }
+            } catch (error) {
+                console.error('Delete account error:', error)
+                alert('An error occurred while deleting your account')
+            }
+        }
+    }
     const [activeSection, setActiveSection] = useState('Dashboard')
     const [telemarketingData, setTelemarketingData] = useState<TelemarketingData>({
         totalCallsMade: 12450,
@@ -171,109 +217,191 @@ export function Telemarketing() {
     const maxSuccessRate = Math.max(...telemarketingData.callSuccessRate.map(d => d.rate), 0)
     const maxDailyActivity = Math.max(...telemarketingData.dailyAgentActivity.map(d => d.calls), 0)
 
-    return (
-        <div className="telemarketing-dashboard">
-            <aside className="telemarketing-sidebar">
-                <div className="sidebar-header">
-                    <h2 className="sidebar-title">Telemarketing</h2>
-                </div>
-                <nav className="sidebar-nav">
-                    <button
-                        className={`nav-item ${activeSection === 'Dashboard' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Dashboard')}
-                    >
-                        Dashboard
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Agents' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Agents')}
-                    >
-                        Agents
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Calls' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Calls')}
-                    >
-                        Calls
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Upload Data' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Upload Data')}
-                    >
-                        Upload Data
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Reports' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Reports')}
-                    >
-                        Reports
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Settings' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Settings')}
-                    >
-                        Settings
-                    </button>
-                </nav>
-            </aside>
-
-            <main className="telemarketing-main">
-                <div className="telemarketing-content">
-                    <h1 className="dashboard-title">Performance Dashboard</h1>
-
-                    {/* KPI Cards */}
-                    <div className="kpi-grid">
-                        <div className="kpi-card">
-                            <div className="kpi-label">Total Calls Made</div>
-                            <div className="kpi-value">{telemarketingData.totalCallsMade.toLocaleString()}</div>
-                            <div className="kpi-change positive">+8.2% vs last week</div>
-                        </div>
-                        <div className="kpi-card">
-                            <div className="kpi-label">Leads Contacted</div>
-                            <div className="kpi-value">{telemarketingData.leadsContacted.toLocaleString()}</div>
-                            <div className="kpi-change positive">+6.5% increase</div>
-                        </div>
-                        <div className="kpi-card">
-                            <div className="kpi-label">Conversion Rate</div>
-                            <div className="kpi-value">{telemarketingData.conversionRate.toFixed(1)}%</div>
-                            <div className="kpi-change positive">+1.2% improvement</div>
-                        </div>
-                        <div className="kpi-card">
-                            <div className="kpi-label">Successful Calls</div>
-                            <div className="kpi-value">{telemarketingData.successfulCalls.toLocaleString()}</div>
-                            <div className="kpi-change positive">+12.8% this week</div>
-                        </div>
-                    </div>
-
-                    {/* Excel Upload Section */}
-                    <div className="upload-section">
-                        <h3 className="section-title">Upload Call Data</h3>
-                        <p className="upload-description">
-                            Drop your Excel file here to upload call data for agents. The system will process the file and convert raw call data into real-time performance results.
-                            Expected columns: Name, Calls Made, Leads Reached, Conversions, Call Success Rate
-                        </p>
-                        <div
-                            className="upload-dropzone"
-                            onDrop={handleDrop}
-                            onDragOver={handleDragOver}
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <div className="upload-icon">📞</div>
-                            <p className="upload-text">
-                                <strong>Drop your Excel file here</strong> or click to browse
+    const renderContent = () => {
+        switch (activeSection) {
+            case 'Dashboard':
+                return (
+                    <>
+                        {/* Upload Data Section - First */}
+                        <div className="upload-section">
+                            <h3 className="section-title">Upload Call Data</h3>
+                            <p className="upload-description">
+                                Drop your Excel file here to upload call data for agents. The system will process the file and convert raw call data into real-time performance results.
+                                Expected columns: Name, Calls Made, Leads Reached, Conversions, Call Success Rate
                             </p>
-                            <p className="upload-hint">Supports .xlsx and .xls formats</p>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".xlsx,.xls"
-                                onChange={handleFileUpload}
-                                style={{ display: 'none' }}
-                            />
+                            <div
+                                className="upload-dropzone"
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="upload-icon">📞</div>
+                                <p className="upload-text">
+                                    <strong>Drop your Excel file here</strong> or click to browse
+                                </p>
+                                <p className="upload-hint">Supports .xlsx and .xls formats</p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    onChange={handleFileUpload}
+                                    style={{ display: 'none' }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* KPI Cards */}
+                        <div className="kpi-grid">
+                            <div className="kpi-card">
+                                <div className="kpi-label">Total Calls Made</div>
+                                <div className="kpi-value">{telemarketingData.totalCallsMade.toLocaleString()}</div>
+                                <div className="kpi-change positive">+8.2% vs last week</div>
+                            </div>
+                            <div className="kpi-card">
+                                <div className="kpi-label">Leads Contacted</div>
+                                <div className="kpi-value">{telemarketingData.leadsContacted.toLocaleString()}</div>
+                                <div className="kpi-change positive">+6.5% increase</div>
+                            </div>
+                            <div className="kpi-card">
+                                <div className="kpi-label">Conversion Rate</div>
+                                <div className="kpi-value">{telemarketingData.conversionRate.toFixed(1)}%</div>
+                                <div className="kpi-change positive">+1.2% improvement</div>
+                            </div>
+                            <div className="kpi-card">
+                                <div className="kpi-label">Successful Calls</div>
+                                <div className="kpi-value">{telemarketingData.successfulCalls.toLocaleString()}</div>
+                                <div className="kpi-change positive">+12.8% this week</div>
+                            </div>
+                        </div>
+
+                        {/* Charts Section */}
+                        <div className="charts-section">
+                            <div className="chart-card">
+                                <h3 className="chart-title">Call Volume</h3>
+                                <div className="chart-container">
+                                    <div className="bar-chart">
+                                        {telemarketingData.callVolume.map((data, index) => (
+                                            <div key={index} className="bar-wrapper">
+                                                <div
+                                                    className="bar"
+                                                    style={{
+                                                        height: `${(data.calls / maxCalls) * 100}%`,
+                                                    }}
+                                                >
+                                                    <span className="bar-value">{data.calls}</span>
+                                                </div>
+                                                <span className="bar-label">{data.day}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="chart-card">
+                                <h3 className="chart-title">Call Success Rate</h3>
+                                <div className="chart-container">
+                                    <div className="bar-chart">
+                                        {telemarketingData.callSuccessRate.map((data, index) => (
+                                            <div key={index} className="bar-wrapper">
+                                                <div
+                                                    className="bar"
+                                                    style={{
+                                                        height: `${(data.rate / maxSuccessRate) * 100}%`,
+                                                    }}
+                                                >
+                                                    <span className="bar-value">{data.rate.toFixed(1)}%</span>
+                                                </div>
+                                                <span className="bar-label">{data.day}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="chart-card">
+                                <h3 className="chart-title">Daily Agent Activity</h3>
+                                <div className="chart-container">
+                                    <div className="bar-chart">
+                                        {telemarketingData.dailyAgentActivity.map((data, index) => (
+                                            <div key={index} className="bar-wrapper">
+                                                <div
+                                                    className="bar"
+                                                    style={{
+                                                        height: `${(data.calls / maxDailyActivity) * 100}%`,
+                                                    }}
+                                                >
+                                                    <span className="bar-value">{data.calls}</span>
+                                                </div>
+                                                <span className="bar-label">{data.agent}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Agent Table */}
+                        <div className="table-section">
+                            <h3 className="section-title">Agent Performance</h3>
+                            <div className="table-wrapper">
+                                <table className="agent-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Calls Made</th>
+                                            <th>Leads Reached</th>
+                                            <th>Conversions</th>
+                                            <th>Call Success Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {telemarketingData.agents.map((agent, index) => (
+                                            <tr key={index}>
+                                                <td className="agent-name">{agent.name}</td>
+                                                <td>{agent.callsMade.toLocaleString()}</td>
+                                                <td>{agent.leadsReached.toLocaleString()}</td>
+                                                <td>{agent.conversions.toLocaleString()}</td>
+                                                <td>{agent.callSuccessRate.toFixed(1)}%</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </>
+                )
+            case 'Agents':
+                return (
+                    <div className="table-section">
+                        <h3 className="section-title">Agent Performance</h3>
+                        <div className="table-wrapper">
+                            <table className="agent-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Calls Made</th>
+                                        <th>Leads Reached</th>
+                                        <th>Conversions</th>
+                                        <th>Call Success Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {telemarketingData.agents.map((agent, index) => (
+                                        <tr key={index}>
+                                            <td className="agent-name">{agent.name}</td>
+                                            <td>{agent.callsMade.toLocaleString()}</td>
+                                            <td>{agent.leadsReached.toLocaleString()}</td>
+                                            <td>{agent.conversions.toLocaleString()}</td>
+                                            <td>{agent.callSuccessRate.toFixed(1)}%</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-
-                    {/* Charts Section */}
+                )
+            case 'Calls':
+                return (
                     <div className="charts-section">
                         <div className="chart-card">
                             <h3 className="chart-title">Call Volume</h3>
@@ -287,7 +415,7 @@ export function Telemarketing() {
                                                     height: `${(data.calls / maxCalls) * 100}%`,
                                                 }}
                                             >
-                                                <span className="bar-value">{data.calls.toLocaleString()}</span>
+                                                <span className="bar-value">{data.calls}</span>
                                             </div>
                                             <span className="bar-label">{data.day}</span>
                                         </div>
@@ -331,42 +459,204 @@ export function Telemarketing() {
                                             >
                                                 <span className="bar-value">{data.calls}</span>
                                             </div>
-                                            <span className="bar-label">{data.agent.split(' ')[0]}</span>
+                                            <span className="bar-label">{data.agent}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Agents Table */}
-                    <div className="table-section">
-                        <h3 className="section-title">Agent Performance</h3>
-                        <div className="table-wrapper">
-                            <table className="agent-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Calls Made</th>
-                                        <th>Leads Reached</th>
-                                        <th>Conversions</th>
-                                        <th>Call Success Rate</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {telemarketingData.agents.map((agent, index) => (
-                                        <tr key={index}>
-                                            <td className="agent-name">{agent.name}</td>
-                                            <td>{agent.callsMade.toLocaleString()}</td>
-                                            <td>{agent.leadsReached.toLocaleString()}</td>
-                                            <td>{agent.conversions.toLocaleString()}</td>
-                                            <td>{agent.callSuccessRate.toFixed(1)}%</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                )
+            case 'Upload Data':
+                return (
+                    <div className="upload-section">
+                        <h3 className="section-title">Upload Call Data</h3>
+                        <p className="upload-description">
+                            Drop your Excel file here to upload call data for agents. The system will process the file and convert raw call data into real-time performance results.
+                            Expected columns: Name, Calls Made, Leads Reached, Conversions, Call Success Rate
+                        </p>
+                        <div
+                            className="upload-dropzone"
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <div className="upload-icon">📞</div>
+                            <p className="upload-text">
+                                <strong>Drop your Excel file here</strong> or click to browse
+                            </p>
+                            <p className="upload-hint">Supports .xlsx and .xls formats</p>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".xlsx,.xls"
+                                onChange={handleFileUpload}
+                                style={{ display: 'none' }}
+                            />
                         </div>
                     </div>
+                )
+            case 'Reports':
+                return (
+                    <div className="charts-section">
+                        <div className="chart-card">
+                            <h3 className="chart-title">Call Volume Report</h3>
+                            <div className="chart-container">
+                                <div className="bar-chart">
+                                    {telemarketingData.callVolume.map((data, index) => (
+                                        <div key={index} className="bar-wrapper">
+                                            <div
+                                                className="bar"
+                                                style={{
+                                                    height: `${(data.calls / maxCalls) * 100}%`,
+                                                }}
+                                            >
+                                                <span className="bar-value">{data.calls}</span>
+                                            </div>
+                                            <span className="bar-label">{data.day}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="chart-card">
+                            <h3 className="chart-title">Call Success Rate Report</h3>
+                            <div className="chart-container">
+                                <div className="bar-chart">
+                                    {telemarketingData.callSuccessRate.map((data, index) => (
+                                        <div key={index} className="bar-wrapper">
+                                            <div
+                                                className="bar"
+                                                style={{
+                                                    height: `${(data.rate / maxSuccessRate) * 100}%`,
+                                                }}
+                                            >
+                                                <span className="bar-value">{data.rate.toFixed(1)}%</span>
+                                            </div>
+                                            <span className="bar-label">{data.day}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            case 'Settings':
+                return (
+                    <div className="table-section">
+                        <h3 className="section-title">Settings</h3>
+                        <p className="section-description">
+                            Configure your telemarketing dashboard settings and preferences.
+                        </p>
+                    </div>
+                )
+            default:
+                return null
+        }
+    }
+
+    return (
+        <div className="telemarketing-dashboard">
+            <aside className="telemarketing-sidebar">
+                <div className="sidebar-header">
+                    <div className="sidebar-title-container">
+                        <h2 className="sidebar-title">Telemarketing</h2>
+                        <div className="user-menu-container" ref={menuRef}>
+                            <button 
+                                className="logout-button" 
+                                onClick={() => setShowUserMenu(!showUserMenu)}
+                                title="User Menu"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                            </button>
+                            {showUserMenu && (
+                                <div className="user-menu-dropdown">
+                                    <button 
+                                        className="user-menu-item"
+                                        onClick={() => {
+                                            setShowUserMenu(false)
+                                            logout()
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span>Logout</span>
+                                    </button>
+                                    <button 
+                                        className="user-menu-item delete"
+                                        onClick={() => {
+                                            setShowUserMenu(false)
+                                            handleDeleteAccount()
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span>Delete Account</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {user && (
+                        <p className="sidebar-greeting">Hello {user.name}</p>
+                    )}
+                </div>
+                <nav className="sidebar-nav">
+                    <button
+                        className={`nav-item ${activeSection === 'Dashboard' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Dashboard')}
+                    >
+                        Dashboard
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Agents' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Agents')}
+                    >
+                        Agents
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Calls' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Calls')}
+                    >
+                        Calls
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Upload Data' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Upload Data')}
+                    >
+                        Upload Data
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Reports' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Reports')}
+                    >
+                        Reports
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Settings' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Settings')}
+                    >
+                        Settings
+                    </button>
+                </nav>
+            </aside>
+
+            <main className="telemarketing-main">
+                <div className="telemarketing-content">
+                    <h1 className="dashboard-title">
+                        {activeSection === 'Dashboard' ? 'Performance Dashboard' : activeSection}
+                    </h1>
+                    {renderContent()}
                 </div>
             </main>
         </div>

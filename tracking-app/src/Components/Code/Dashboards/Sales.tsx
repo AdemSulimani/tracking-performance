@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import '../../Style/Dashboards style/Sales.css'
+import { useAuth } from '../../../context/AuthContext'
 
 interface Employee {
     name: string
@@ -21,7 +22,52 @@ interface SalesData {
 }
 
 export function Sales() {
+    const { user, logout } = useAuth()
     const [activeSection, setActiveSection] = useState('Overview')
+    const [showUserMenu, setShowUserMenu] = useState(false)
+    const menuRef = useRef<HTMLDivElement>(null)
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowUserMenu(false)
+            }
+        }
+
+        if (showUserMenu) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [showUserMenu])
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            try {
+                const token = localStorage.getItem('token')
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/delete-account`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if (response.ok) {
+                    logout()
+                } else {
+                    const data = await response.json()
+                    alert(data.message || 'Failed to delete account')
+                }
+            } catch (error) {
+                console.error('Delete account error:', error)
+                alert('An error occurred while deleting your account')
+            }
+        }
+    }
     const [salesData, setSalesData] = useState<SalesData>({
         totalRevenue: 2450000,
         dealsClosed: 127,
@@ -154,81 +200,205 @@ export function Sales() {
     const maxRevenue = Math.max(...salesData.salesPerformance.map(d => d.revenue), 0)
     const maxFunnel = Math.max(...salesData.funnel.map(f => f.count), 0)
 
-    return (
-        <div className="sales-dashboard">
-            <aside className="sales-sidebar">
-                <div className="sidebar-header">
-                    <h2 className="sidebar-title">Sales Dashboard</h2>
-                </div>
-                <nav className="sidebar-nav">
-                    <button
-                        className={`nav-item ${activeSection === 'Overview' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Overview')}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Employees' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Employees')}
-                    >
-                        Employees
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Sales Funnel' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Sales Funnel')}
-                    >
-                        Sales Funnel
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Upload Data' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Upload Data')}
-                    >
-                        Upload Data
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Analytics' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Analytics')}
-                    >
-                        Analytics
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Settings' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Settings')}
-                    >
-                        Settings
-                    </button>
-                </nav>
-            </aside>
+    const renderContent = () => {
+        switch (activeSection) {
+            case 'Overview':
+                return (
+                    <>
+                        {/* Upload Data Section - First */}
+                        <div className="upload-section">
+                            <h3 className="section-title">Upload Employee Sales Data</h3>
+                            <p className="upload-description">
+                                Upload an Excel file (.xlsx) with employee sales data to automatically update all KPIs, charts, and tables.
+                                Expected columns: Name, Deals Closed, Revenue Generated, Conversion Rate, Status
+                            </p>
+                            <div
+                                className="upload-dropzone"
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="upload-icon">📊</div>
+                                <p className="upload-text">
+                                    <strong>Drop your Excel file here</strong> or click to browse
+                                </p>
+                                <p className="upload-hint">Supports .xlsx and .xls formats</p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    onChange={handleFileUpload}
+                                    style={{ display: 'none' }}
+                                />
+                            </div>
+                        </div>
 
-            <main className="sales-main">
-                <div className="sales-content">
-                    <h1 className="dashboard-title">Sales Performance Overview</h1>
+                        {/* KPI Cards */}
+                        <div className="kpi-grid">
+                            <div className="kpi-card">
+                                <div className="kpi-label">Total Revenue</div>
+                                <div className="kpi-value">${(salesData.totalRevenue / 1000000).toFixed(2)}M</div>
+                                <div className="kpi-change positive">+12.5% vs last quarter</div>
+                            </div>
+                            <div className="kpi-card">
+                                <div className="kpi-label">Deals Closed</div>
+                                <div className="kpi-value">{salesData.dealsClosed}</div>
+                                <div className="kpi-change positive">+8 deals this month</div>
+                            </div>
+                            <div className="kpi-card">
+                                <div className="kpi-label">Conversion Rate</div>
+                                <div className="kpi-value">{salesData.conversionRate.toFixed(1)}%</div>
+                                <div className="kpi-change positive">+2.3% improvement</div>
+                            </div>
+                            <div className="kpi-card">
+                                <div className="kpi-label">Average Deal Value</div>
+                                <div className="kpi-value">${(salesData.averageDealValue / 1000).toFixed(1)}K</div>
+                                <div className="kpi-change positive">+5.2% increase</div>
+                            </div>
+                        </div>
 
-                    {/* KPI Cards */}
-                    <div className="kpi-grid">
-                        <div className="kpi-card">
-                            <div className="kpi-label">Total Revenue</div>
-                            <div className="kpi-value">${(salesData.totalRevenue / 1000000).toFixed(2)}M</div>
-                            <div className="kpi-change positive">+12.5% vs last quarter</div>
+                        {/* Charts Section */}
+                        <div className="charts-section">
+                            <div className="chart-card">
+                                <h3 className="chart-title">Sales Performance Over Time</h3>
+                                <div className="chart-container">
+                                    <div className="bar-chart">
+                                        {salesData.salesPerformance.map((data, index) => (
+                                            <div key={index} className="bar-wrapper">
+                                                <div
+                                                    className="bar"
+                                                    style={{
+                                                        height: `${(data.revenue / maxRevenue) * 100}%`,
+                                                    }}
+                                                >
+                                                    <span className="bar-value">${(data.revenue / 1000).toFixed(0)}K</span>
+                                                </div>
+                                                <span className="bar-label">{data.month}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="chart-card">
+                                <h3 className="chart-title">Sales Funnel</h3>
+                                <div className="chart-container">
+                                    <div className="funnel-chart">
+                                        {salesData.funnel.map((stage, index) => (
+                                            <div key={index} className="funnel-stage">
+                                                <div className="funnel-bar-wrapper">
+                                                    <div
+                                                        className="funnel-bar"
+                                                        style={{
+                                                            width: `${(stage.count / maxFunnel) * 100}%`,
+                                                        }}
+                                                    >
+                                                        <span className="funnel-label">{stage.stage}</span>
+                                                        <span className="funnel-value">{stage.count}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="kpi-card">
-                            <div className="kpi-label">Deals Closed</div>
-                            <div className="kpi-value">{salesData.dealsClosed}</div>
-                            <div className="kpi-change positive">+8 deals this month</div>
+
+                        {/* Employee Table */}
+                        <div className="table-section">
+                            <h3 className="section-title">Team Performance</h3>
+                            <div className="table-wrapper">
+                                <table className="employee-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Deals Closed</th>
+                                            <th>Revenue Generated</th>
+                                            <th>Conversion Rate</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {salesData.employees.map((employee, index) => (
+                                            <tr key={index}>
+                                                <td className="employee-name">{employee.name}</td>
+                                                <td>{employee.dealsClosed}</td>
+                                                <td>${(employee.revenueGenerated / 1000).toFixed(0)}K</td>
+                                                <td>{employee.conversionRate.toFixed(1)}%</td>
+                                                <td>
+                                                    <span className={`status-badge status-${employee.status.toLowerCase().replace(' ', '-')}`}>
+                                                        {employee.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div className="kpi-card">
-                            <div className="kpi-label">Conversion Rate</div>
-                            <div className="kpi-value">{salesData.conversionRate.toFixed(1)}%</div>
-                            <div className="kpi-change positive">+2.3% improvement</div>
-                        </div>
-                        <div className="kpi-card">
-                            <div className="kpi-label">Average Deal Value</div>
-                            <div className="kpi-value">${(salesData.averageDealValue / 1000).toFixed(1)}K</div>
-                            <div className="kpi-change positive">+5.2% increase</div>
+                    </>
+                )
+            case 'Employees':
+                return (
+                    <div className="table-section">
+                        <h3 className="section-title">Team Performance</h3>
+                        <div className="table-wrapper">
+                            <table className="employee-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Deals Closed</th>
+                                        <th>Revenue Generated</th>
+                                        <th>Conversion Rate</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {salesData.employees.map((employee, index) => (
+                                        <tr key={index}>
+                                            <td className="employee-name">{employee.name}</td>
+                                            <td>{employee.dealsClosed}</td>
+                                            <td>${(employee.revenueGenerated / 1000).toFixed(0)}K</td>
+                                            <td>{employee.conversionRate.toFixed(1)}%</td>
+                                            <td>
+                                                <span className={`status-badge status-${employee.status.toLowerCase().replace(' ', '-')}`}>
+                                                    {employee.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-
-                    {/* Excel Upload Section */}
+                )
+            case 'Sales Funnel':
+                return (
+                    <div className="chart-card">
+                        <h3 className="chart-title">Sales Funnel</h3>
+                        <div className="chart-container">
+                            <div className="funnel-chart">
+                                {salesData.funnel.map((stage, index) => (
+                                    <div key={index} className="funnel-stage">
+                                        <div className="funnel-bar-wrapper">
+                                            <div
+                                                className="funnel-bar"
+                                                style={{
+                                                    width: `${(stage.count / maxFunnel) * 100}%`,
+                                                }}
+                                            >
+                                                <span className="funnel-label">{stage.stage}</span>
+                                                <span className="funnel-value">{stage.count}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )
+            case 'Upload Data':
+                return (
                     <div className="upload-section">
                         <h3 className="section-title">Upload Employee Sales Data</h3>
                         <p className="upload-description">
@@ -255,8 +425,9 @@ export function Sales() {
                             />
                         </div>
                     </div>
-
-                    {/* Charts Section */}
+                )
+            case 'Analytics':
+                return (
                     <div className="charts-section">
                         <div className="chart-card">
                             <h3 className="chart-title">Sales Performance Over Time</h3>
@@ -302,39 +473,122 @@ export function Sales() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Employee Table */}
+                )
+            case 'Settings':
+                return (
                     <div className="table-section">
-                        <h3 className="section-title">Team Performance</h3>
-                        <div className="table-wrapper">
-                            <table className="employee-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Deals Closed</th>
-                                        <th>Revenue Generated</th>
-                                        <th>Conversion Rate</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {salesData.employees.map((employee, index) => (
-                                        <tr key={index}>
-                                            <td className="employee-name">{employee.name}</td>
-                                            <td>{employee.dealsClosed}</td>
-                                            <td>${(employee.revenueGenerated / 1000).toFixed(0)}K</td>
-                                            <td>{employee.conversionRate.toFixed(1)}%</td>
-                                            <td>
-                                                <span className={`status-badge status-${employee.status.toLowerCase().replace(' ', '-')}`}>
-                                                    {employee.status}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <h3 className="section-title">Settings</h3>
+                        <p className="section-description">
+                            Configure your sales dashboard settings and preferences.
+                        </p>
+                    </div>
+                )
+            default:
+                return null
+        }
+    }
+
+    return (
+        <div className="sales-dashboard">
+            <aside className="sales-sidebar">
+                <div className="sidebar-header">
+                    <div className="sidebar-title-container">
+                        <h2 className="sidebar-title">Sales Dashboard</h2>
+                        <div className="user-menu-container" ref={menuRef}>
+                            <button 
+                                className="logout-button" 
+                                onClick={() => setShowUserMenu(!showUserMenu)}
+                                title="User Menu"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                            </button>
+                            {showUserMenu && (
+                                <div className="user-menu-dropdown">
+                                    <button 
+                                        className="user-menu-item"
+                                        onClick={() => {
+                                            setShowUserMenu(false)
+                                            logout()
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span>Logout</span>
+                                    </button>
+                                    <button 
+                                        className="user-menu-item delete"
+                                        onClick={() => {
+                                            setShowUserMenu(false)
+                                            handleDeleteAccount()
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span>Delete Account</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
+                    {user && (
+                        <p className="sidebar-greeting">Hello {user.name}</p>
+                    )}
+                </div>
+                <nav className="sidebar-nav">
+                    <button
+                        className={`nav-item ${activeSection === 'Overview' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Overview')}
+                    >
+                        Overview
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Employees' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Employees')}
+                    >
+                        Employees
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Sales Funnel' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Sales Funnel')}
+                    >
+                        Sales Funnel
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Upload Data' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Upload Data')}
+                    >
+                        Upload Data
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Analytics' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Analytics')}
+                    >
+                        Analytics
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Settings' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Settings')}
+                    >
+                        Settings
+                    </button>
+                </nav>
+            </aside>
+
+            <main className="sales-main">
+                <div className="sales-content">
+                    <h1 className="dashboard-title">
+                        {activeSection === 'Overview' ? 'Sales Performance Overview' : activeSection}
+                    </h1>
+                    {renderContent()}
                 </div>
             </main>
         </div>

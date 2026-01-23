@@ -29,6 +29,17 @@
     padding: 2rem 2rem 2rem 2rem;
     border-bottom: 1px solid rgba(69, 51, 184, 0.1);
     margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.telemarketing-sidebar .sidebar-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
 }
 
 .telemarketing-sidebar .sidebar-title {
@@ -37,6 +48,90 @@
     color: var(--black-color);
     margin: 0;
     font-family: "Inter", sans-serif;
+    flex: 1;
+}
+
+.telemarketing-sidebar .logout-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000000;
+    transition: opacity 0.2s ease;
+}
+
+.telemarketing-sidebar .logout-button:hover {
+    opacity: 0.7;
+}
+
+.telemarketing-sidebar .logout-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.telemarketing-sidebar .user-menu-container {
+    position: relative;
+}
+
+.telemarketing-sidebar .user-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: white;
+    border: 1px solid rgba(69, 51, 184, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.telemarketing-sidebar .user-menu-item {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--black-color);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: background-color 0.2s ease;
+}
+
+.telemarketing-sidebar .user-menu-item:hover {
+    background-color: rgba(69, 51, 184, 0.08);
+}
+
+.telemarketing-sidebar .user-menu-item.delete {
+    color: #dc2626;
+}
+
+.telemarketing-sidebar .user-menu-item.delete:hover {
+    background-color: rgba(220, 38, 38, 0.1);
+}
+
+.telemarketing-sidebar .user-menu-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.telemarketing-sidebar .sidebar-greeting {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--purple-text);
+    margin: 0.5rem 0 0 0;
+    font-family: "Inter", sans-serif;
+    text-align: left;
 }
 
 .telemarketing-sidebar .sidebar-nav {
@@ -79,9 +174,11 @@
     margin-top: 0;
     margin-left: 260px;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     background: white;
     min-height: 100vh;
+    box-sizing: border-box;
+    width: calc(100% - 260px);
 }
 
 .telemarketing-content {
@@ -91,6 +188,8 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .telemarketing-content .dashboard-title {
@@ -158,6 +257,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .telemarketing-content .chart-card {
@@ -166,6 +267,10 @@
     border-radius: 15px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .telemarketing-content .chart-title {
@@ -184,6 +289,26 @@
     justify-content: center;
     overflow-x: auto;
     overflow-y: hidden;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+}
+
+.telemarketing-content .chart-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.telemarketing-content .chart-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.telemarketing-content .chart-container::-webkit-scrollbar-thumb {
+    background: var(--purple-text);
+    border-radius: 4px;
+}
+
+.telemarketing-content .chart-container::-webkit-scrollbar-thumb:hover {
+    background: #4a3fb8;
 }
 
 /* Bar Chart */
@@ -192,19 +317,23 @@
     align-items: flex-end;
     justify-content: space-around;
     width: 100%;
+    min-width: fit-content;
     height: 100%;
     gap: 1rem;
-    padding: 1rem 0;
-    min-width: 0;
+    padding: 1rem 0.5rem;
+    box-sizing: border-box;
 }
 
 .telemarketing-content .bar-wrapper {
     flex: 1;
+    min-width: 60px;
+    max-width: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
     height: 100%;
     justify-content: flex-end;
+    box-sizing: border-box;
 }
 
 .telemarketing-content .bar {
@@ -258,12 +387,35 @@
 
 .telemarketing-content .table-wrapper {
     overflow-x: auto;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+}
+
+.telemarketing-content .table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.telemarketing-content .table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.telemarketing-content .table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--purple-text);
+    border-radius: 4px;
+}
+
+.telemarketing-content .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #4a3fb8;
 }
 
 .telemarketing-content .agent-table {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
     font-family: "Inter", sans-serif;
+    box-sizing: border-box;
 }
 
 .telemarketing-content .agent-table thead {
@@ -356,12 +508,21 @@
     .telemarketing-content .charts-section {
         grid-template-columns: 1fr;
     }
+    
+    .telemarketing-content {
+        max-width: 100%;
+    }
+    
+    .telemarketing-main {
+        width: calc(100% - 260px);
+    }
 }
 
 @media (max-width: 768px) {
     .telemarketing-dashboard {
         flex-direction: column;
         margin-top: -122px;
+        overflow-x: hidden;
     }
 
     .telemarketing-sidebar {
@@ -391,6 +552,13 @@
         margin-left: 0;
         padding: 1.5rem;
         padding-top: 1.5rem;
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .telemarketing-content {
+        max-width: 100%;
+        width: 100%;
     }
 
     .telemarketing-content .kpi-grid {
@@ -404,16 +572,34 @@
     .telemarketing-content .chart-container {
         height: 250px;
     }
+    
+    .telemarketing-content .charts-section {
+        grid-template-columns: 1fr;
+        min-width: 0;
+    }
+    
+    .telemarketing-content .chart-card {
+        min-width: 0;
+        overflow: visible;
+    }
 }
 
 @media (max-width: 480px) {
     .telemarketing-dashboard {
         margin-top: -112px;
+        overflow-x: hidden;
     }
 
     .telemarketing-main {
         padding: 1rem;
         padding-top: 1rem;
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .telemarketing-content {
+        max-width: 100%;
+        width: 100%;
     }
 
     .telemarketing-content .dashboard-title {
@@ -427,9 +613,15 @@
     .telemarketing-content .chart-container {
         height: 200px;
     }
+    
+    .telemarketing-content .bar-wrapper {
+        min-width: 50px;
+        max-width: 80px;
+    }
 
     .telemarketing-content .agent-table {
         font-size: 12px;
+        min-width: 500px;
     }
 
     .telemarketing-content .agent-table th,
