@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import '../../Style/Landing style/Home.css'
 
 export function Home() {
+    const navigate = useNavigate()
     const logosTrackRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -32,7 +34,7 @@ export function Home() {
     }, [])
 
     return (
-        <section className="home">
+        <section id="home" className="home">
             <div className="home-container">
                 <div className="home-content">
                     <div className="home-text-section">
@@ -43,8 +45,8 @@ export function Home() {
                             Join 5,000+ forward-thinking teams using Lattice's HR and AI tools to manage people, pay, and performance — all on one trusted platform.
                         </p>
                         <div className="home-buttons">
-                            <button className="home-button primary">Request a demo</button>
-                            <button className="home-button secondary">Take a tour {'>'}</button>
+                            <button className="home-button primary" onClick={() => navigate('/login')}>Request a demo</button>
+                            <button className="home-button secondary" onClick={() => navigate('/login')}>Take a tour {'>'}</button>
                         </div>
                     </div>
                     <div className="home-image-section">

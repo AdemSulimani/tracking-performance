@@ -1,15 +1,18 @@
+import { useNavigate } from 'react-router-dom';
 import '../../Style/Landing style/Ready.css';
 
 export function Ready() {
+    const navigate = useNavigate();
+    
     return (
-        <section className="ready">
+        <section id="ready" className="ready">
             <div className="ready-container">
                 <div className="ready-content">
                     <h1 className="ready-heading">Your people are your business</h1>
                     <p className="ready-subheading">Ensure both are successful with Lattice.</p>
                     <div className="ready-buttons">
-                        <button className="ready-button">Request a demo</button>
-                        <button className="ready-button">Take a free tour</button>
+                        <button className="ready-button" onClick={() => navigate('/login')}>Request a demo</button>
+                        <button className="ready-button" onClick={() => navigate('/login')}>Take a free tour</button>
                     </div>
                     <div className="ready-ratings">
                         <div className="ready-rating">

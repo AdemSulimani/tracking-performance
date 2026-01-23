@@ -2,7 +2,7 @@ import '../../Style/Landing style/Resources.css'
 
 export function Resources() {
     return (
-        <section className="resources">
+        <section id="resources" className="resources">
             <div className="resources-container">
                 <h2 className="resources-heading">Excellent HR teams deserve<br />excellent resources</h2>
                 

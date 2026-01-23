@@ -55,7 +55,7 @@ export function Performance() {
     }, [])
 
     return (
-        <section className="performance">
+        <section id="performance" className="performance">
             <div className="performance-container">
                 <div className="performance-header">
                     <h2 className="performance-title">High performance starts here.</h2>

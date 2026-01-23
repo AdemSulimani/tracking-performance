@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import '../../Style/Landing style/OurProcess.css'
 
 export function OurProcess() {
+    const navigate = useNavigate()
+    
     return (
-        <section className="our-process">
+        <section id="our-process" className="our-process">
             <div className="our-process-container">
                 <div className="our-process-header">
                     <h2 className="our-process-heading">
@@ -72,7 +75,7 @@ export function OurProcess() {
                 </div>
 
                 <div className="our-process-button-wrapper">
-                    <button className="our-process-button">Find out More</button>
+                    <button className="our-process-button" onClick={() => navigate('/login')}>Find out More</button>
                 </div>
             </div>
         </section>
