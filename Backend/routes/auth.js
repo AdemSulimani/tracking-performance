@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword, googleAuth, googleAuthCallback, googleAuthState, updateCompanyType } = require('../controllers/authController');
+const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword, googleAuth, googleAuthCallback, googleAuthState, updateCompanyType, deleteAccount } = require('../controllers/authController');
 const { loginLimiter, registerLimiter, verifyCodeLimiter, resendCodeLimiter, forgotPasswordLimiter, resetPasswordLimiter } = require('../middleware/rateLimiter');
 const { sanitizeInput } = require('../middleware/inputSanitizer');
 const { authenticate } = require('../middleware/auth');
@@ -53,6 +53,10 @@ router.get('/google/callback', googleAuthCallback);
 // POST /api/auth/update-company-type — për update company type (për Google users)
 // Protected route - requires authentication
 router.post('/update-company-type', authenticate, updateCompanyType);
+
+// DELETE /api/auth/delete-account — për fshirje të llogarisë
+// Protected route - requires authentication
+router.delete('/delete-account', authenticate, deleteAccount);
 
 module.exports = router;
 

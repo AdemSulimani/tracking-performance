@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import '../../Style/Dashboards style/Agency.css'
+import { useAuth } from '../../../context/AuthContext'
 
 interface TeamMember {
     name: string
@@ -37,6 +38,51 @@ interface AgencyData {
 }
 
 export function Agency() {
+    const { user, logout } = useAuth()
+    const [showUserMenu, setShowUserMenu] = useState(false)
+    const menuRef = useRef<HTMLDivElement>(null)
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowUserMenu(false)
+            }
+        }
+
+        if (showUserMenu) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [showUserMenu])
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            try {
+                const token = localStorage.getItem('token')
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/delete-account`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if (response.ok) {
+                    logout()
+                } else {
+                    const data = await response.json()
+                    alert(data.message || 'Failed to delete account')
+                }
+            } catch (error) {
+                console.error('Delete account error:', error)
+                alert('An error occurred while deleting your account')
+            }
+        }
+    }
     const [activeSection, setActiveSection] = useState('Dashboard')
     const [agencyData, setAgencyData] = useState<AgencyData>({
         activeProjects: 24,
@@ -568,7 +614,56 @@ export function Agency() {
         <div className="agency-dashboard">
             <aside className="agency-sidebar">
                 <div className="sidebar-header">
-                    <h2 className="sidebar-title">Agency Hub</h2>
+                    <div className="sidebar-title-container">
+                        <h2 className="sidebar-title">Agency Hub</h2>
+                        <div className="user-menu-container" ref={menuRef}>
+                            <button 
+                                className="logout-button" 
+                                onClick={() => setShowUserMenu(!showUserMenu)}
+                                title="User Menu"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                            </button>
+                            {showUserMenu && (
+                                <div className="user-menu-dropdown">
+                                    <button 
+                                        className="user-menu-item"
+                                        onClick={() => {
+                                            setShowUserMenu(false)
+                                            logout()
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span>Logout</span>
+                                    </button>
+                                    <button 
+                                        className="user-menu-item delete"
+                                        onClick={() => {
+                                            setShowUserMenu(false)
+                                            handleDeleteAccount()
+                                        }}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span>Delete Account</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {user && (
+                        <p className="sidebar-greeting">Hello {user.name}</p>
+                    )}
                 </div>
                 <nav className="sidebar-nav">
                     <button
