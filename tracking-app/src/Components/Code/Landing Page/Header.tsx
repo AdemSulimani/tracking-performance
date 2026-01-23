@@ -1,11 +1,24 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../Style/Landing style/Header.css';
 
 interface HeaderProps {
     isBannerHidden?: boolean;
 }
 
+// Lista e komponenteve për navigim (pa Banner dhe Header)
+const navigationItems = [
+    { id: 'home', label: 'Home' },
+    { id: 'explore', label: 'Explore' },
+    { id: 'performance', label: 'Performance' },
+    { id: 'our-process', label: 'Our Process' },
+    { id: 'resources', label: 'Resources' },
+    { id: 'intergrations', label: 'Integrations' },
+    { id: 'ready', label: 'Ready' }
+];
+
 export function Header({ isBannerHidden = false }: HeaderProps) {
+    const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -14,6 +27,22 @@ export function Header({ isBannerHidden = false }: HeaderProps) {
 
     const closeMenu = () => {
         setIsMenuOpen(false);
+    };
+
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+        e.preventDefault();
+        const element = document.getElementById(sectionId);
+        if (element) {
+            const headerOffset = isBannerHidden ? 80 : 130; // Offset për header dhe banner
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+        closeMenu();
     };
 
     return (
@@ -26,16 +55,21 @@ export function Header({ isBannerHidden = false }: HeaderProps) {
                     
                     <nav className="header-middle">
                         <ul className="header-nav">
-                            <li><a href="#platform">Platform</a></li>
-                            <li><a href="#why-lattice">Why Lattice</a></li>
-                            <li><a href="#customers">Customers</a></li>
-                            <li><a href="#resources">Resources</a></li>
-                            <li><a href="#pricing">Pricing</a></li>
+                            {navigationItems.map((item) => (
+                                <li key={item.id}>
+                                    <a 
+                                        href={`#${item.id}`}
+                                        onClick={(e) => handleNavClick(e, item.id)}
+                                    >
+                                        {item.label}
+                                    </a>
+                                </li>
+                            ))}
                         </ul>
                     </nav>
 
                     <div className="header-right">
-                        <button className="header-button">Get started</button>
+                        <button className="header-button" onClick={() => navigate('/login')}>Get started</button>
                     </div>
 
                     <button 
@@ -68,13 +102,18 @@ export function Header({ isBannerHidden = false }: HeaderProps) {
                 </div>
                 <nav className="sidebar-nav">
                     <ul className="sidebar-nav-list">
-                        <li><a href="#platform" onClick={closeMenu}>Platform</a></li>
-                        <li><a href="#why-lattice" onClick={closeMenu}>Why Lattice</a></li>
-                        <li><a href="#customers" onClick={closeMenu}>Customers</a></li>
-                        <li><a href="#resources" onClick={closeMenu}>Resources</a></li>
-                        <li><a href="#pricing" onClick={closeMenu}>Pricing</a></li>
+                        {navigationItems.map((item) => (
+                            <li key={item.id}>
+                                <a 
+                                    href={`#${item.id}`}
+                                    onClick={(e) => handleNavClick(e, item.id)}
+                                >
+                                    {item.label}
+                                </a>
+                            </li>
+                        ))}
                     </ul>
-                    <button className="sidebar-button" onClick={closeMenu}>Get started</button>
+                    <button className="sidebar-button" onClick={() => { closeMenu(); navigate('/login'); }}>Get started</button>
                 </nav>
             </aside>
         </>

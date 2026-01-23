@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import '../../Style/Landing style/Explore.css'
 
 const buttonTexts = {
@@ -48,6 +49,7 @@ function useTypingAnimation(text: string, speed: number = 30) {
 }
 
 export function Explore() {
+    const navigate = useNavigate()
     const [selectedButton, setSelectedButton] = useState<'leave-policies' | 'career-growth' | 'manager-coaching' | null>(null)
     const [currentUserMessage, setCurrentUserMessage] = useState(buttonTexts['leave-policies'].userMessage)
     const [currentAiResponse, setCurrentAiResponse] = useState(buttonTexts['leave-policies'].aiResponse)
@@ -85,7 +87,7 @@ export function Explore() {
     }
 
     return (
-        <section className="explore">
+        <section id="explore" className="explore">
             <div className="explore-container">
                 <div className="explore-content">
                     <div className="explore-header-section">
@@ -153,7 +155,7 @@ export function Explore() {
                         <p className="explore-promotional-text-bottom">
                             HR teams spend 57% of their time on manual tasks. Get time back with fast, reliable support that transforms HR from reactive to proactive.
                         </p>
-                        <button className="explore-learn-more-button">Learn more</button>
+                        <button className="explore-learn-more-button" onClick={() => navigate('/login')}>Learn more</button>
                     </div>
                 </div>
             </div>
