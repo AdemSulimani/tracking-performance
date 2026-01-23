@@ -77,17 +77,6 @@ const register = async (req, res) => {
             });
         }
 
-        // 4. Kontrollo nëse ekziston username-i (name) në databazë
-        const existingUserByName = await User.findOne({ 
-            name: { $regex: new RegExp(`^${trimmedName}$`, 'i') } // Case-insensitive search
-        });
-        if (existingUserByName) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Username (name) is already in use' 
-            });
-        }
-
         // 5. Hash password-in me bcrypt (bëhet automatikisht në model pre-save hook)
         // 6. Ruaj user-in në databazë
         const user = await User.create({
@@ -129,19 +118,13 @@ const register = async (req, res) => {
             });
         }
 
-        // Handle duplicate key error (if name becomes unique in future)
+        // Handle duplicate key error (only for email, as it's the only unique field)
         if (error.code === 11000) {
             const field = Object.keys(error.keyPattern)[0];
             if (field === 'email') {
                 return res.status(400).json({ 
                     success: false,
                     message: 'Email is already in use' 
-                });
-            }
-            if (field === 'name') {
-                return res.status(400).json({ 
-                    success: false,
-                    message: 'Username (name) is already in use' 
                 });
             }
         }
@@ -353,19 +336,8 @@ const checkUsername = async (req, res) => {
             });
         }
 
-        // Check if username (name) exists (case-insensitive)
-        const existingUser = await User.findOne({
-            name: { $regex: new RegExp(`^${trimmedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
-        });
-
-        if (existingUser) {
-            return res.status(200).json({
-                success: true,
-                message: 'Username is already in use',
-                available: false
-            });
-        }
-
+        // Username (name) is not required to be unique, so it's always available
+        // Multiple users can have the same name - only email must be unique
         return res.status(200).json({
             success: true,
             message: 'Username is available',
