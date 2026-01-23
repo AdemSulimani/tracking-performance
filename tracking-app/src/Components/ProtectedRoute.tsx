@@ -41,10 +41,23 @@ export function ProtectedRoute({ children, requiredCompanyType }: ProtectedRoute
     }
 
     // If route requires specific company type, check if user has access
-    if (requiredCompanyType && user.companyType !== requiredCompanyType) {
-        // Redirect to user's own dashboard
-        const userDashboard = getDashboardPath(user.companyType);
-        return <Navigate to={userDashboard} replace />;
+    if (requiredCompanyType) {
+        // Nëse user nuk ka companyType, lejoje të shkojë në /select-company-type
+        if (!user.companyType) {
+            // Nëse jemi tashmë në /select-company-type, lejoje
+            if (window.location.pathname === '/select-company-type') {
+                return <>{children}</>;
+            }
+            // Përndryshe, ridrejto në /select-company-type
+            return <Navigate to="/select-company-type" replace />;
+        }
+        
+        // Nëse user ka companyType por nuk përputhet me requiredCompanyType
+        if (user.companyType !== requiredCompanyType) {
+            // Redirect to user's own dashboard
+            const userDashboard = getDashboardPath(user.companyType);
+            return <Navigate to={userDashboard} replace />;
+        }
     }
 
     return <>{children}</>;

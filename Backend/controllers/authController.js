@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const { OAuth2Client } = require('google-auth-library');
 const { sendVerificationCode, sendPasswordResetEmail } = require('../utils/emailService');
 
 // Generate JWT Token
@@ -727,6 +728,241 @@ const resetPassword = async (req, res) => {
     }
 };
 
+// Google OAuth Controller
+const googleAuth = async (req, res) => {
+    try {
+        // 1. Merr authorization code nga frontend
+        const { code } = req.body;
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Google authorization code is required'
+            });
+        }
+
+        // 2. Shkëmbe authorization code me access_token duke përdorur Client Secret
+        const redirectUri = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/google-callback`;
+        
+        const client = new OAuth2Client(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            redirectUri
+        );
+
+        let tokenResponse;
+        try {
+            // Shkëmbe code me token
+            // Sigurohu që code nuk ka HTML entities (p.sh. &#x2F; në vend të /)
+            const cleanCode = code.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/');
+            tokenResponse = await client.getToken(cleanCode);
+            const accessToken = tokenResponse.tokens.access_token;
+
+            if (!accessToken) {
+                throw new Error('Failed to get access token from Google');
+            }
+
+            // 3. Merr user info nga Google me access_token
+            const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            
+            if (!userInfoResponse.ok) {
+                throw new Error('Failed to fetch user info from Google');
+            }
+            
+            var userInfo = await userInfoResponse.json();
+        } catch (googleError) {
+            console.error('Google OAuth error:', googleError);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid Google authorization code. Please try again.'
+            });
+        }
+
+        const { email, given_name, family_name, name } = userInfo;
+
+        // 3. Validim i email-it
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email not provided by Google'
+            });
+        }
+
+        // 4. Kontrollo nëse email-i ekziston në databazë
+        const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+
+        // 5a. Nëse email-i ekziston
+        if (existingUser) {
+            // Kontrollo nëse user-i ka password (manual account)
+            if (existingUser.password && !existingUser.isGoogleUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'This email is already registered with a password. Please use email/password login instead.'
+                });
+            }
+
+            // User-i është Google user ose nuk ka password
+            // Kontrollo nëse ka companyType
+            const needsCompanyType = !existingUser.companyType;
+
+            // Gjenero JWT token
+            const jwtToken = generateToken(existingUser._id);
+
+            // Kthej përgjigje
+            return res.status(200).json({
+                success: true,
+                message: 'Login successful',
+                token: jwtToken,
+                user: {
+                    id: existingUser._id,
+                    companyType: existingUser.companyType,
+                    name: existingUser.name,
+                    lastname: existingUser.lastname,
+                    email: existingUser.email
+                },
+                needsCompanyType: needsCompanyType
+            });
+        }
+
+        // 5b. Nëse email-i nuk ekziston - krijo user të ri
+        // Split name nëse nuk ka given_name dhe family_name
+        let firstName = given_name || '';
+        let lastName = family_name || '';
+
+        // Nëse nuk ka given_name dhe family_name, provo të split name
+        if (!firstName && !lastName && name) {
+            const nameParts = name.trim().split(' ');
+            firstName = nameParts[0] || '';
+            lastName = nameParts.slice(1).join(' ') || '';
+        }
+
+        // Nëse ende nuk ka, përdor email si fallback
+        if (!firstName) {
+            firstName = email.split('@')[0];
+        }
+        if (!lastName) {
+            lastName = 'User';
+        }
+
+        // Krijo user të ri
+        const newUser = await User.create({
+            email: email.toLowerCase().trim(),
+            name: firstName.trim(),
+            lastname: lastName.trim(),
+            isGoogleUser: true,
+            companyType: null, // Do të vendoset më vonë
+            password: null, // Google users nuk kanë password
+            isVerified: true // Google users janë automatikisht verified
+        });
+
+        // Gjenero JWT token
+        const jwtToken = generateToken(newUser._id);
+
+        // Kthej përgjigje me needsCompanyType: true
+        return res.status(201).json({
+            success: true,
+            message: 'Account created successfully',
+            token: jwtToken,
+            user: {
+                id: newUser._id,
+                companyType: newUser.companyType,
+                name: newUser.name,
+                lastname: newUser.lastname,
+                email: newUser.email
+            },
+            needsCompanyType: true
+        });
+
+    } catch (error) {
+        console.error('Google auth error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during Google authentication',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+// Update Company Type Controller
+const updateCompanyType = async (req, res) => {
+    try {
+        // 1. Merr companyType nga request body
+        const { companyType } = req.body;
+
+        // 2. Validim i companyType
+        if (!companyType) {
+            return res.status(400).json({
+                success: false,
+                message: 'Company type is required'
+            });
+        }
+
+        // Validim i vlerës së companyType
+        const validCompanyTypes = ['sales', 'real-estate', 'telemarketing', 'agency'];
+        if (!validCompanyTypes.includes(companyType)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid company type. Must be one of: sales, real-estate, telemarketing, agency'
+            });
+        }
+
+        // 3. Merr user nga req.user (nga auth middleware)
+        const user = req.user;
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // 4. Kontrollo nëse user-i tashmë ka companyType
+        // Nëse ka dhe është i njëjtë, kthej sukses pa bërë update
+        if (user.companyType === companyType) {
+            return res.status(200).json({
+                success: true,
+                message: 'Company type is already set to this value',
+                user: {
+                    id: user._id,
+                    companyType: user.companyType,
+                    name: user.name,
+                    lastname: user.lastname,
+                    email: user.email
+                }
+            });
+        }
+
+        // 5. Përditëso companyType
+        user.companyType = companyType;
+        await user.save();
+
+        // 6. Kthej user të përditësuar
+        res.status(200).json({
+            success: true,
+            message: 'Company type updated successfully',
+            user: {
+                id: user._id,
+                companyType: user.companyType,
+                name: user.name,
+                lastname: user.lastname,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+        console.error('Update company type error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during company type update',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
@@ -735,6 +971,8 @@ module.exports = {
     verifyCode,
     resendCode,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    googleAuth,
+    updateCompanyType
 };
 

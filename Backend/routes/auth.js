@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword } = require('../controllers/authController');
+const { register, login, checkEmail, checkUsername, verifyCode, resendCode, forgotPassword, resetPassword, googleAuth, updateCompanyType } = require('../controllers/authController');
 const { loginLimiter, registerLimiter, verifyCodeLimiter, resendCodeLimiter, forgotPasswordLimiter, resetPasswordLimiter } = require('../middleware/rateLimiter');
 const { sanitizeInput } = require('../middleware/inputSanitizer');
+const { authenticate } = require('../middleware/auth');
 
 // Apply input sanitization to all routes
 router.use(sanitizeInput);
@@ -36,6 +37,14 @@ router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
 // POST /api/auth/reset-password — për reset password me token
 // Rate limited: 5 attempts per 15 minutes per IP
 router.post('/reset-password', resetPasswordLimiter, resetPassword);
+
+// POST /api/auth/google — për Google OAuth login/register
+// Rate limited: 10 attempts per 15 minutes per IP
+router.post('/google', loginLimiter, googleAuth);
+
+// POST /api/auth/update-company-type — për update company type (për Google users)
+// Protected route - requires authentication
+router.post('/update-company-type', authenticate, updateCompanyType);
 
 module.exports = router;
 

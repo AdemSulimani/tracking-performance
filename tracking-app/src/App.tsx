@@ -16,6 +16,8 @@ import { Register } from './Components/Code/Login-Register/Register'
 import { Authentication } from './Components/Code/Login-Register/Authentication'
 import { Forgotpass } from './Components/Code/Login-Register/Forgotpass'
 import { ResetPassword } from './Components/Code/Login-Register/ResetPassword'
+import { SelectCompanyType } from './Components/Code/Login-Register/SelectCompanyType'
+import { GoogleCallback } from './Components/Code/Login-Register/GoogleCallback'
 import { Sales } from './Components/Code/Dashboards/Sales'
 import { Telemarketing } from './Components/Code/Dashboards/Telemarketing'
 import { RealEstate } from './Components/Code/Dashboards/RealEstate'
@@ -104,9 +106,18 @@ function App() {
       } />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/google-callback" element={<GoogleCallback />} />
       <Route path="/authentication" element={<Authentication />} />
       <Route path="/forgot-password" element={<Forgotpass />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route 
+        path="/select-company-type" 
+        element={
+          <ProtectedRoute>
+            <SelectCompanyType />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/sales" 
         element={

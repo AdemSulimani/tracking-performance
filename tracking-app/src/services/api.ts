@@ -18,7 +18,7 @@ interface ApiResponse<T> {
 
 interface User {
     id: string;
-    companyType: string;
+    companyType: string | null;
     name: string;
     lastname: string;
     email: string;
@@ -39,6 +39,12 @@ interface RegisterResponse {
 interface VerifyCodeResponse {
     token: string;
     user: User;
+}
+
+interface GoogleAuthResponse {
+    token: string;
+    user: User;
+    needsCompanyType: boolean;
 }
 
 // API Client
@@ -230,6 +236,43 @@ class ApiClient {
         };
     }
 
+    async googleAuth(googleCode: string): Promise<GoogleAuthResponse> {
+        const response = await this.request<GoogleAuthResponse>('/auth/google', {
+            method: 'POST',
+            body: JSON.stringify({ code: googleCode }),
+        });
+
+        // Backend returns token, user, and needsCompanyType
+        if (response.token && response.user) {
+            // Store token in localStorage
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+        }
+
+        return {
+            token: response.token!,
+            user: response.user!,
+            needsCompanyType: (response as any).needsCompanyType ?? false,
+        };
+    }
+
+    async updateCompanyType(companyType: string): Promise<{ user: User }> {
+        const response = await this.request<{ user: User }>('/auth/update-company-type', {
+            method: 'POST',
+            body: JSON.stringify({ companyType }),
+        });
+
+        // Backend returns updated user
+        if (response.user) {
+            // Update user in localStorage
+            localStorage.setItem('user', JSON.stringify(response.user));
+        }
+
+        return {
+            user: response.user!,
+        };
+    }
+
     // Logout
     logout(): void {
         localStorage.removeItem('token');
@@ -261,5 +304,5 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-export type { User, LoginResponse, RegisterResponse, VerifyCodeResponse };
+export type { User, LoginResponse, RegisterResponse, VerifyCodeResponse, GoogleAuthResponse };
 
