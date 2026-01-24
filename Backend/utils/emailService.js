@@ -12,31 +12,15 @@ const createTransporter = () => {
         return null;
     }
 
-    const port = parseInt(process.env.EMAIL_PORT, 10);
-    const isSecure = port === 465;
-    
-    const transporter = nodemailer.createTransport({
+    return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
-        port: port,
-        secure: isSecure, // true for 465, false for other ports
+        port: parseInt(process.env.EMAIL_PORT, 10),
+        secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
-        },
-        // Increased timeouts for Render network
-        connectionTimeout: 30000, // 30 seconds
-        greetingTimeout: 30000, // 30 seconds
-        socketTimeout: 30000, // 30 seconds
-        // For Gmail with port 587, use STARTTLS
-        requireTLS: !isSecure && port === 587, // Require TLS for port 587
-        // TLS configuration for Gmail
-        tls: {
-            // Don't reject unauthorized certificates (needed for some SMTP servers)
-            rejectUnauthorized: false
         }
     });
-    
-    return transporter;
 };
 
 // Send verification code email
@@ -46,15 +30,6 @@ const sendVerificationCode = async (email, verificationCode) => {
         
         if (!transporter) {
             throw new Error('Email transporter not configured');
-        }
-        
-        // Verify connection before sending (optional, but helps catch issues early)
-        try {
-            await transporter.verify();
-            console.log('Email server connection verified');
-        } catch (verifyError) {
-            console.warn('Email server verification failed, but continuing:', verifyError.message);
-            // Don't throw here, let it try to send anyway
         }
 
         const mailOptions = {
@@ -95,20 +70,12 @@ const sendVerificationCode = async (email, verificationCode) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log('Verification code email sent successfully:', info.messageId);
-        console.log('Email response:', info.response);
+        console.log('Verification code email sent:', info.messageId);
         return { success: true, messageId: info.messageId };
 
     } catch (error) {
         console.error('Error sending verification code email:', error);
-        console.error('Error details:', {
-            message: error.message,
-            code: error.code,
-            command: error.command,
-            response: error.response
-        });
-        // Throw more detailed error for debugging
-        throw new Error(`Failed to send verification code email: ${error.message || 'Unknown error'}`);
+        throw new Error('Failed to send verification code email');
     }
 };
 
