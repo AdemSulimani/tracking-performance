@@ -41,26 +41,41 @@ const allowedOrigins = (process.env.FRONTEND_URL || '')
     .filter(Boolean)
     .map(normalizeOrigin);
 
+// Log allowed origins for debugging (only in non-production or if explicitly enabled)
+if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_CORS === 'true') {
+    console.log('Allowed CORS origins:', allowedOrigins);
+}
+
 const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
-        // In development, allow all localhost origins
+        const normalizedOrigin = normalizeOrigin(origin);
+        
+        // If FRONTEND_URL is set, use it (production mode)
+        if (allowedOrigins.length > 0) {
+            if (allowedOrigins.includes(normalizedOrigin)) {
+                return callback(null, true);
+            } else {
+                // Log for debugging
+                if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_CORS === 'true') {
+                    console.log('CORS blocked origin:', normalizedOrigin);
+                    console.log('Allowed origins:', allowedOrigins);
+                }
+                return callback(new Error('Not allowed by CORS'));
+            }
+        }
+        
+        // If no FRONTEND_URL is set, allow localhost in development
         if (process.env.NODE_ENV !== 'production') {
-            // Allow any localhost origin in development
             if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
                 return callback(null, true);
             }
         }
         
-        // In production, use specific allowed origins (support commas, ignore trailing slash)
-        const normalizedOrigin = normalizeOrigin(origin);
-        if (allowedOrigins.includes(normalizedOrigin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+        // Default: deny if no configuration
+        callback(new Error('Not allowed by CORS - no FRONTEND_URL configured'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
