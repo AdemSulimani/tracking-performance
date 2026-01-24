@@ -12,26 +12,28 @@ const createTransporter = () => {
         return null;
     }
 
+    const port = parseInt(process.env.EMAIL_PORT, 10);
+    const isSecure = port === 465;
+    
     const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT, 10),
-        secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
+        port: port,
+        secure: isSecure, // true for 465, false for other ports
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
         },
         // Increased timeouts for Render network
-        connectionTimeout: 30000, // 30 seconds (increased from 10)
+        connectionTimeout: 30000, // 30 seconds
         greetingTimeout: 30000, // 30 seconds
         socketTimeout: 30000, // 30 seconds
-        // For Gmail and other services that require TLS
-        requireTLS: process.env.EMAIL_PORT === '587', // Require TLS for port 587
+        // For Gmail with port 587, use STARTTLS
+        requireTLS: !isSecure && port === 587, // Require TLS for port 587
+        // TLS configuration for Gmail
         tls: {
-            rejectUnauthorized: false // Allow self-signed certificates (use with caution)
-        },
-        // Debug mode (can be removed in production)
-        debug: process.env.NODE_ENV === 'development',
-        logger: process.env.NODE_ENV === 'development'
+            // Don't reject unauthorized certificates (needed for some SMTP servers)
+            rejectUnauthorized: false
+        }
     });
     
     return transporter;
@@ -93,7 +95,8 @@ const sendVerificationCode = async (email, verificationCode) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log('Verification code email sent:', info.messageId);
+        console.log('Verification code email sent successfully:', info.messageId);
+        console.log('Email response:', info.response);
         return { success: true, messageId: info.messageId };
 
     } catch (error) {
