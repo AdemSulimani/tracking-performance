@@ -95,7 +95,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 // SECURITY NOTE: In production, use HTTPS
 // Option 1: Use a reverse proxy (nginx, Apache) with SSL certificate
@@ -108,10 +108,14 @@ const PORT = process.env.PORT;
 //   };
 //   https.createServer(options, app).listen(PORT);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    if (process.env.NODE_ENV !== 'production') {
-        console.log('⚠️  WARNING: Running in development mode. Use HTTPS in production!');
-    }
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('⚠️  WARNING: Running in development mode. Use HTTPS in production!');
+        }
+    });
+}
+
+module.exports = app;
 
