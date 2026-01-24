@@ -4,10 +4,9 @@ import '../../Style/Login style/GoogleAuthModal.css';
 
 interface GoogleAuthModalProps {
     isOpen: boolean;
-    onClose: () => void;
 }
 
-export function GoogleAuthModal({ isOpen, onClose }: GoogleAuthModalProps) {
+export function GoogleAuthModal({ isOpen }: GoogleAuthModalProps) {
     const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     // Përdor backend URL për redirect URI (Google do të redirect-ojë te backend)
     const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
