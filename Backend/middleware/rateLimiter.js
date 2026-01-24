@@ -12,7 +12,9 @@ const loginLimiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     skipSuccessfulRequests: true, // Don't count successful requests
-    skipFailedRequests: false // Count failed requests
+    skipFailedRequests: false, // Count failed requests
+    // Trust proxy is set in server.js, but we need to explicitly tell rate limiter
+    trustProxy: true
 });
 
 // Rate limiter for registration

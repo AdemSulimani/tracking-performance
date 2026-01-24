@@ -24,7 +24,8 @@ const app = express();
 
 // Trust proxy - Required for Render and other hosting platforms that use reverse proxy
 // This allows Express to correctly identify the client's IP address
-app.set('trust proxy', true);
+// Set to 1 to trust only the first proxy (Render uses 1 reverse proxy)
+app.set('trust proxy', 1);
 
 // Security Middleware
 // IMPORTANT: In production, ensure HTTPS is enabled
