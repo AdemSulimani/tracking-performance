@@ -129,7 +129,7 @@ userSchema.pre('findOneAndUpdate', async function() {
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
     if (!this.password) {
-        throw new Error('Password not available for comparison');
+        throw new Error('This account was created with Google. Please sign in with Google.');
     }
     return await bcrypt.compare(candidatePassword, this.password);
 };

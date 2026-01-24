@@ -26,8 +26,6 @@ import { ProtectedRoute } from './Components/ProtectedRoute'
 
 function App() {
   const [isBannerHidden, setIsBannerHidden] = useState(false);
-  const [needsVerification, setNeedsVerification] = useState(false);
-  const [pendingUserEmail, setPendingUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,9 +39,7 @@ function App() {
     
     // Nëse ka pendingVerificationEmail, duhet të shkojë në authentication (edhe nëse ka token të vjetër)
     if (pendingEmail) {
-      // Nëse ka pendingVerificationEmail, vendos needsVerification = true
-      setNeedsVerification(true);
-      setPendingUserEmail(pendingEmail);
+      // Pending verification email found
       
       // Nëse jemi në /authentication, mos bëj asgjë
       if (location.pathname === '/authentication') {
@@ -59,8 +55,7 @@ function App() {
       }
     } else if (token) {
       // Nëse ka token dhe NUK ka pendingVerificationEmail, user është i autentifikuar plotësisht
-      setNeedsVerification(false);
-      setPendingUserEmail(null);
+      // Fully authenticated
       
       // Nëse jemi në /authentication dhe kemi token (por nuk ka pendingEmail), ridrejto në dashboard
       if (location.pathname === '/authentication') {
@@ -83,8 +78,7 @@ function App() {
       }
     } else {
       // Nëse nuk ka as token as pendingEmail, reset state
-      setNeedsVerification(false);
-      setPendingUserEmail(null);
+      // Reset state (no token or pending email)
     }
   }, [location.pathname, navigate]);
 

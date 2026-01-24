@@ -195,10 +195,18 @@ const login = async (req, res) => {
             });
         }
 
-        // 4. Nëse gjendet, krahaso password-in e hash-uar me atë të dërguar (me bcrypt.compare)
+        // 4. Nëse user është Google-only (pa password), kthe mesazh të qartë
+        if (!user.password) {
+            return res.status(400).json({
+                success: false,
+                message: 'This account was created with Google. Please sign in with Google.'
+            });
+        }
+
+        // 5. Nëse gjendet, krahaso password-in e hash-uar me atë të dërguar (me bcrypt.compare)
         const isPasswordValid = await user.comparePassword(password);
         
-        // 5. Nëse nuk përputhen, kthej "Invalid credentials"
+        // 6. Nëse nuk përputhen, kthej "Invalid credentials"
         if (!isPasswordValid) {
             return res.status(401).json({ 
                 success: false,

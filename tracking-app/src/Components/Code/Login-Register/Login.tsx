@@ -136,7 +136,6 @@ export function Login() {
 
                 <GoogleAuthModal 
                     isOpen={showGoogleModal}
-                    onClose={() => setShowGoogleModal(false)}
                 />
 
                 <div className="register-link">
