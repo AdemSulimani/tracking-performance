@@ -75,20 +75,32 @@ class ApiClient {
 
         try {
             const response = await fetch(url, config);
-            const data = await response.json();
+            
+            // Check if response is JSON before parsing
+            let data;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                // If not JSON, try to get text
+                const text = await response.text();
+                throw new Error(`Server error: ${response.status} ${response.statusText}. ${text || 'Please check your connection and try again.'}`);
+            }
 
             if (!response.ok) {
                 // Backend returns error messages in data.message
-                const errorMessage = data.message || data.errors?.join(', ') || 'An error occurred';
+                const errorMessage = data.message || data.errors?.join(', ') || `Error ${response.status}: ${response.statusText}`;
                 throw new Error(errorMessage);
             }
 
             return data;
         } catch (error) {
             if (error instanceof Error) {
+                // Log error for debugging
+                console.error('API request error:', error.message, 'URL:', url);
                 throw error;
             }
-            throw new Error('Network error occurred');
+            throw new Error('Network error occurred. Please check your connection.');
         }
     }
 
