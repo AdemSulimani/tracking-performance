@@ -58,6 +58,12 @@ const corsOptions = {
             return callback(null, true);
         }
 
+        // Last-resort fallback in production to avoid blocking preflight.
+        // TODO: remove once FRONEND_URLS/FRONTEND_URL is stable in env.
+        if (process.env.NODE_ENV === 'production') {
+            return callback(null, true);
+        }
+
         callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
@@ -67,6 +73,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Body Parser Middleware
 // Limit JSON payload size to prevent DoS attacks
@@ -100,7 +107,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // SECURITY NOTE: In production, use HTTPS
 // Option 1: Use a reverse proxy (nginx, Apache) with SSL certificate
