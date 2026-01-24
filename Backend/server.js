@@ -22,6 +22,10 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+// Trust proxy - Required for Render and other hosting platforms that use reverse proxy
+// This allows Express to correctly identify the client's IP address
+app.set('trust proxy', true);
+
 // Security Middleware
 // IMPORTANT: In production, ensure HTTPS is enabled
 // Use a reverse proxy (nginx, Apache) or enable HTTPS directly
