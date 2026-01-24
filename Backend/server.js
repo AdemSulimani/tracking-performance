@@ -34,7 +34,7 @@ const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
+
         // In development, allow all localhost origins
         if (process.env.NODE_ENV !== 'production') {
             // Allow any localhost origin in development
@@ -42,18 +42,23 @@ const corsOptions = {
                 return callback(null, true);
             }
         }
-        
-        // In production, use specific allowed origins
-        const allowedOrigins = [];
-        if (process.env.FRONTEND_URL) {
-            allowedOrigins.push(process.env.FRONTEND_URL);
+
+        // In production, allow explicit list (comma-separated) or any vercel.app subdomain
+        const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
+            .split(',')
+            .map(value => value.trim())
+            .filter(Boolean);
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
         }
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+
+        // Fallback: allow Vercel preview/production frontend subdomains
+        if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
+            return callback(null, true);
         }
+
+        callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
