@@ -12,15 +12,25 @@ const createTransporter = () => {
         return null;
     }
 
-    return nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: parseInt(process.env.EMAIL_PORT, 10),
         secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
+        },
+        // Add timeout and connection options
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
+        // For Gmail and other services that require TLS
+        tls: {
+            rejectUnauthorized: false // Allow self-signed certificates (use with caution)
         }
     });
+    
+    return transporter;
 };
 
 // Send verification code email
@@ -75,7 +85,14 @@ const sendVerificationCode = async (email, verificationCode) => {
 
     } catch (error) {
         console.error('Error sending verification code email:', error);
-        throw new Error('Failed to send verification code email');
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            response: error.response
+        });
+        // Throw more detailed error for debugging
+        throw new Error(`Failed to send verification code email: ${error.message || 'Unknown error'}`);
     }
 };
 
