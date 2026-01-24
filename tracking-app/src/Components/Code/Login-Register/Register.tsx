@@ -356,7 +356,6 @@ export function Register() {
 
                 <GoogleAuthModal 
                     isOpen={showGoogleModal}
-                    onClose={() => setShowGoogleModal(false)}
                 />
 
                 <div className="register-link">
