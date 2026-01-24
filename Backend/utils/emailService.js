@@ -20,14 +20,18 @@ const createTransporter = () => {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
         },
-        // Add timeout and connection options
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
+        // Increased timeouts for Render network
+        connectionTimeout: 30000, // 30 seconds (increased from 10)
+        greetingTimeout: 30000, // 30 seconds
+        socketTimeout: 30000, // 30 seconds
         // For Gmail and other services that require TLS
+        requireTLS: process.env.EMAIL_PORT === '587', // Require TLS for port 587
         tls: {
             rejectUnauthorized: false // Allow self-signed certificates (use with caution)
-        }
+        },
+        // Debug mode (can be removed in production)
+        debug: process.env.NODE_ENV === 'development',
+        logger: process.env.NODE_ENV === 'development'
     });
     
     return transporter;
@@ -40,6 +44,15 @@ const sendVerificationCode = async (email, verificationCode) => {
         
         if (!transporter) {
             throw new Error('Email transporter not configured');
+        }
+        
+        // Verify connection before sending (optional, but helps catch issues early)
+        try {
+            await transporter.verify();
+            console.log('Email server connection verified');
+        } catch (verifyError) {
+            console.warn('Email server verification failed, but continuing:', verifyError.message);
+            // Don't throw here, let it try to send anyway
         }
 
         const mailOptions = {
