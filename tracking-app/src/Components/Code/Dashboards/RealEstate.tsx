@@ -173,13 +173,13 @@ export function RealEstate() {
         // Generate time series data
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         const currentMonth = new Date().getMonth()
-        const propertyPerformance = months.slice(0, currentMonth + 1).map((month, idx) => ({
+        const propertyPerformance = months.slice(0, currentMonth + 1).map((month) => ({
             month,
             listed: Math.round(propertiesListed / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
             sold: Math.round(dealsClosed / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
         }))
 
-        const dealsOverTime = months.slice(0, currentMonth + 1).map((month, idx) => ({
+        const dealsOverTime = months.slice(0, currentMonth + 1).map((month) => ({
             month,
             deals: Math.round(dealsClosed / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
             revenue: Math.round(totalRevenue / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
@@ -226,8 +226,6 @@ export function RealEstate() {
     const maxListed = Math.max(...realEstateData.propertyPerformance.map(d => d.listed), 0)
     const maxSold = Math.max(...realEstateData.propertyPerformance.map(d => d.sold), 0)
     const maxDeals = Math.max(...realEstateData.dealsOverTime.map(d => d.deals), 0)
-    const maxRevenue = Math.max(...realEstateData.dealsOverTime.map(d => d.revenue), 0)
-
     const renderContent = () => {
         switch (activeSection) {
             case 'Overview':

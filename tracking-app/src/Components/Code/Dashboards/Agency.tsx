@@ -214,12 +214,12 @@ export function Agency() {
             projectProgress,
             teamProductivity,
             campaignResults,
-            projects: projectProgress.map((p, i) => ({
+            projects: projectProgress.map((p) => ({
                 name: p.project,
                 progress: p.progress,
                 status: p.progress >= 90 ? 'Completed' as const : p.progress >= 50 ? 'In Progress' as const : 'On Hold' as const,
             })),
-            campaigns: campaignResults.map((c, i) => ({
+            campaigns: campaignResults.map((c) => ({
                 name: c.campaign,
                 leads: Math.round(leadsGenerated / campaignResults.length + Math.random() * 50),
                 conversions: Math.round((leadsGenerated / campaignResults.length) * 0.15),
