@@ -232,10 +232,6 @@ const login = async (req, res) => {
             await sendVerificationCode(user.email, verificationCode);
         } catch (emailError) {
             console.error('Error sending verification email:', emailError);
-            console.error('Email error details:', {
-                message: emailError.message,
-                stack: emailError.stack
-            });
             // Nëse dërgimi i email-it dështon, fshi kod verifikimi dhe kthej gabim
             user.verificationCode = undefined;
             user.verificationCodeExpires = undefined;
@@ -243,8 +239,7 @@ const login = async (req, res) => {
             
             return res.status(500).json({
                 success: false,
-                message: 'Failed to send verification code. Please check your email configuration or try again later.',
-                error: process.env.NODE_ENV === 'development' ? emailError.message : undefined
+                message: 'Failed to send verification code. Please try again.'
             });
         }
 

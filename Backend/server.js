@@ -22,11 +22,6 @@ connectDB();
 // Initialize Express app
 const app = express();
 
-// Trust proxy - Required for Render and other hosting platforms that use reverse proxy
-// This allows Express to correctly identify the client's IP address
-// Set to 1 to trust only the first proxy (Render uses 1 reverse proxy)
-app.set('trust proxy', 1);
-
 // Security Middleware
 // IMPORTANT: In production, ensure HTTPS is enabled
 // Use a reverse proxy (nginx, Apache) or enable HTTPS directly
@@ -52,23 +47,11 @@ const corsOptions = {
         const allowedOrigins = [];
         if (process.env.FRONTEND_URL) {
             allowedOrigins.push(process.env.FRONTEND_URL);
-            // Also allow without trailing slash
-            if (process.env.FRONTEND_URL.endsWith('/')) {
-                allowedOrigins.push(process.env.FRONTEND_URL.slice(0, -1));
-            } else {
-                allowedOrigins.push(process.env.FRONTEND_URL + '/');
-            }
-        }
-        
-        // Allow Vercel preview deployments (optional - for testing)
-        if (origin.includes('.vercel.app')) {
-            return callback(null, true);
         }
         
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            console.warn('CORS blocked origin:', origin, 'Allowed origins:', allowedOrigins);
             callback(new Error('Not allowed by CORS'));
         }
     },
