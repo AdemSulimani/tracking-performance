@@ -30,11 +30,22 @@ const securityMiddleware = require('./middleware/security');
 app.use(securityMiddleware);
 
 // CORS Configuration
+const normalizeOrigin = (value) => {
+    if (!value) return value;
+    return value.replace(/\/+$/, '');
+};
+
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean)
+    .map(normalizeOrigin);
+
 const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-
+        
         // In development, allow all localhost origins
         if (process.env.NODE_ENV !== 'production') {
             // Allow any localhost origin in development
@@ -42,29 +53,14 @@ const corsOptions = {
                 return callback(null, true);
             }
         }
-
-        // In production, allow explicit list (comma-separated) or any vercel.app subdomain
-        const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
-            .split(',')
-            .map(value => value.trim())
-            .filter(Boolean);
-
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
+        
+        // In production, use specific allowed origins (support commas, ignore trailing slash)
+        const normalizedOrigin = normalizeOrigin(origin);
+        if (allowedOrigins.includes(normalizedOrigin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
         }
-
-        // Fallback: allow Vercel preview/production frontend subdomains
-        if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
-            return callback(null, true);
-        }
-
-        // Last-resort fallback in production to avoid blocking preflight.
-        // TODO: remove once FRONEND_URLS/FRONTEND_URL is stable in env.
-        if (process.env.NODE_ENV === 'production') {
-            return callback(null, true);
-        }
-
-        callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -73,7 +69,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 // Body Parser Middleware
 // Limit JSON payload size to prevent DoS attacks
@@ -107,7 +102,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 // SECURITY NOTE: In production, use HTTPS
 // Option 1: Use a reverse proxy (nginx, Apache) with SSL certificate
