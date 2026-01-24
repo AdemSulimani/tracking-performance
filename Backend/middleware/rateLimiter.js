@@ -2,6 +2,7 @@ const rateLimit = require('express-rate-limit');
 
 // Rate limiter for login attempts
 // Limits login attempts to prevent brute force attacks
+// Note: trust proxy is set in server.js, rate limiter will automatically use it
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 15, // Limit each IP to 15 login requests per windowMs (increased from 5)
@@ -12,9 +13,7 @@ const loginLimiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     skipSuccessfulRequests: true, // Don't count successful requests
-    skipFailedRequests: false, // Count failed requests
-    // Trust proxy is set in server.js, but we need to explicitly tell rate limiter
-    trustProxy: true
+    skipFailedRequests: false // Count failed requests
 });
 
 // Rate limiter for registration
