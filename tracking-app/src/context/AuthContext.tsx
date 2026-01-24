@@ -12,7 +12,7 @@ interface AuthContextType {
     googleAuth: (googleToken: string) => Promise<void>;
     updateCompanyType: (companyType: string) => Promise<void>;
     logout: () => void;
-    getDashboardPath: (companyType: string) => string;
+    getDashboardPath: (companyType: string | null) => string;
 }
 
 interface RegisterData {
