@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@react-oauth/google": "^0.13.4",
+    "@sendgrid/mail": "^8.1.6",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -29,7 +30,6 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.1.5",
-    "nodemailer": "^7.0.12",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "validator": "^13.11.0"
