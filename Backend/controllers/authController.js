@@ -820,12 +820,18 @@ const googleAuth = async (req, res) => {
 
         // 5a. Nëse email-i ekziston
         if (existingUser) {
-            // Kontrollo nëse user-i ka password (manual account)
+            // Nëse user-i ka password dhe nuk është Google user, konverto account-in në Google account
             if (existingUser.password && !existingUser.isGoogleUser) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'This email is already registered with a password. Please use email/password login instead.'
-                });
+                // Konverto account-in në Google account
+                existingUser.password = null; // Fshi password-in
+                existingUser.isGoogleUser = true; // Vendos si Google user
+                existingUser.isVerified = true; // Google users janë automatikisht verified
+                
+                // Përditëso emrin dhe mbiemrin nëse janë të ndryshëm nga Google (opsionale)
+                // Por nëse user-i ka vendosur emrin e vet, mos e ndrysho
+                // Le ta lëmë siç është për momentin
+                
+                await existingUser.save();
             }
 
             // User-i është Google user ose nuk ka password
@@ -1084,9 +1090,18 @@ const googleAuthCallback = async (req, res) => {
 
         // 7a. Nëse email-i ekziston
         if (existingUser) {
-            // Kontrollo nëse user-i ka password (manual account)
+            // Nëse user-i ka password dhe nuk është Google user, konverto account-in në Google account
             if (existingUser.password && !existingUser.isGoogleUser) {
-                return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('This email is already registered with a password. Please use email/password login instead.')}`);
+                // Konverto account-in në Google account
+                existingUser.password = null; // Fshi password-in
+                existingUser.isGoogleUser = true; // Vendos si Google user
+                existingUser.isVerified = true; // Google users janë automatikisht verified
+                
+                // Përditëso emrin dhe mbiemrin nëse janë të ndryshëm nga Google (opsionale)
+                // Por nëse user-i ka vendosur emrin e vet, mos e ndrysho
+                // Le ta lëmë siç është për momentin
+                
+                await existingUser.save();
             }
 
             // User-i është Google user ose nuk ka password
