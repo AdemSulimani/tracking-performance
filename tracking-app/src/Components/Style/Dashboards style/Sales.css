@@ -139,6 +139,11 @@
     padding: 0 1.5rem;
 }
 
+div.sidebar-header {
+    flex-direction: column;
+    padding-left: 0.8rem;
+}
+
 .nav-item {
     padding: 14px 16px;
     border: none;
