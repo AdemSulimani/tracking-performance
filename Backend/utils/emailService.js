@@ -12,28 +12,14 @@ const createTransporter = () => {
         return null;
     }
 
-    const port = parseInt(process.env.EMAIL_PORT, 10);
-    const isSecure = port === 465;
-    
     return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
-        port: port,
-        secure: isSecure, // true for 465, false for other ports
+        port: parseInt(process.env.EMAIL_PORT, 10),
+        secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
-        },
-        // Connection timeout options for Render
-        connectionTimeout: 60000, // 60 seconds
-        greetingTimeout: 30000, // 30 seconds
-        socketTimeout: 60000, // 60 seconds
-        // TLS options for better compatibility
-        tls: {
-            rejectUnauthorized: false, // Allow self-signed certificates if needed
-            ciphers: 'SSLv3' // Use SSLv3 for compatibility
-        },
-        // For non-secure connections (port 587), use STARTTLS
-        requireTLS: !isSecure && port === 587
+        }
     });
 };
 
