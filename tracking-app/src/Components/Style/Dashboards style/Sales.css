@@ -52,7 +52,6 @@
     font-weight: 700;
     color: var(--black-color);
     margin: 0;
-    padding-left: 0.8rem;
     font-family: "Inter", sans-serif;
     flex: 0 1 auto;
     line-height: 1.2;
@@ -133,12 +132,19 @@
     flex-shrink: 0;
 }
 
+.sidebar-text {
+    padding-left: 1rem;
+}
+
+.sales-heading {
+    padding-left: 1rem;
+}
+
 .sidebar-greeting {
     font-size: 16px;
     font-weight: 500;
     color: var(--purple-text);
     margin: 0.75rem 0 0 0;
-    padding-left: 0.8rem;
     font-family: "Inter", sans-serif;
     text-align: left;
     width: 100%;
