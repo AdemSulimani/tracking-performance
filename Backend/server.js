@@ -45,13 +45,30 @@ const corsOptions = {
         
         // In production, use specific allowed origins
         const allowedOrigins = [];
+        
+        // Add FRONTEND_URL if set
         if (process.env.FRONTEND_URL) {
             allowedOrigins.push(process.env.FRONTEND_URL);
+            // Also add without trailing slash if it has one
+            if (process.env.FRONTEND_URL.endsWith('/')) {
+                allowedOrigins.push(process.env.FRONTEND_URL.slice(0, -1));
+            } else {
+                allowedOrigins.push(process.env.FRONTEND_URL + '/');
+            }
+        }
+        
+        // Log for debugging (remove in production if needed)
+        console.log('CORS check - Origin:', origin);
+        console.log('CORS check - Allowed origins:', allowedOrigins);
+        
+        if (allowedOrigins.length === 0) {
+            console.warn('⚠️  WARNING: No FRONTEND_URL set in environment variables. CORS may block requests.');
         }
         
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
+            console.error('❌ CORS blocked origin:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
