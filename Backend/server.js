@@ -43,32 +43,61 @@ const corsOptions = {
             }
         }
         
+        // Normalize origin (remove trailing slash)
+        const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+        
         // In production, use specific allowed origins
         const allowedOrigins = [];
         
-        // Add FRONTEND_URL if set
+        // Add FRONTEND_URL if set (normalize it too)
         if (process.env.FRONTEND_URL) {
-            allowedOrigins.push(process.env.FRONTEND_URL);
-            // Also add without trailing slash if it has one
-            if (process.env.FRONTEND_URL.endsWith('/')) {
-                allowedOrigins.push(process.env.FRONTEND_URL.slice(0, -1));
-            } else {
-                allowedOrigins.push(process.env.FRONTEND_URL + '/');
+            const normalizedFrontendUrl = process.env.FRONTEND_URL.endsWith('/') 
+                ? process.env.FRONTEND_URL.slice(0, -1) 
+                : process.env.FRONTEND_URL;
+            allowedOrigins.push(normalizedFrontendUrl);
+            
+            // Also allow any Vercel subdomain if FRONTEND_URL is a Vercel domain
+            if (normalizedFrontendUrl.includes('.vercel.app')) {
+                // Extract base domain pattern (e.g., tracking-performance-*.vercel.app)
+                const domainMatch = normalizedFrontendUrl.match(/https?:\/\/([^.]+)\.vercel\.app/);
+                if (domainMatch) {
+                    // Allow any subdomain of vercel.app for this project
+                    allowedOrigins.push(new RegExp(`^https://[^.]+\.vercel\.app$`));
+                }
             }
         }
         
-        // Log for debugging (remove in production if needed)
-        console.log('CORS check - Origin:', origin);
+        // Log for debugging
+        console.log('CORS check - Origin:', normalizedOrigin);
         console.log('CORS check - Allowed origins:', allowedOrigins);
         
         if (allowedOrigins.length === 0) {
             console.warn('⚠️  WARNING: No FRONTEND_URL set in environment variables. CORS may block requests.');
+            return callback(new Error('No FRONTEND_URL configured'));
         }
         
-        if (allowedOrigins.indexOf(origin) !== -1) {
+        // Check if origin matches any allowed origin
+        let isAllowed = false;
+        for (const allowedOrigin of allowedOrigins) {
+            if (typeof allowedOrigin === 'string') {
+                if (normalizedOrigin === allowedOrigin) {
+                    isAllowed = true;
+                    break;
+                }
+            } else if (allowedOrigin instanceof RegExp) {
+                if (allowedOrigin.test(normalizedOrigin)) {
+                    isAllowed = true;
+                    break;
+                }
+            }
+        }
+        
+        if (isAllowed) {
+            console.log('✅ CORS allowed for origin:', normalizedOrigin);
             callback(null, true);
         } else {
-            console.error('❌ CORS blocked origin:', origin);
+            console.error('❌ CORS blocked origin:', normalizedOrigin);
+            console.error('Expected one of:', allowedOrigins);
             callback(new Error('Not allowed by CORS'));
         }
     },
