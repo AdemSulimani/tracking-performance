@@ -22,7 +22,14 @@ connectDB();
 // Initialize Express app
 const app = express();
 
-// CORS Configuration - MUST be before security middleware for preflight requests
+// Security Middleware
+// IMPORTANT: In production, ensure HTTPS is enabled
+// Use a reverse proxy (nginx, Apache) or enable HTTPS directly
+// Helmet sets various HTTP headers for security
+const securityMiddleware = require('./middleware/security');
+app.use(securityMiddleware);
+
+// CORS Configuration
 const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -56,13 +63,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Security Middleware - AFTER CORS
-// IMPORTANT: In production, ensure HTTPS is enabled
-// Use a reverse proxy (nginx, Apache) or enable HTTPS directly
-// Helmet sets various HTTP headers for security
-const securityMiddleware = require('./middleware/security');
-app.use(securityMiddleware);
-
 // Body Parser Middleware
 // Limit JSON payload size to prevent DoS attacks
 app.use(express.json({ limit: '10mb' }));
@@ -95,7 +95,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 // SECURITY NOTE: In production, use HTTPS
 // Option 1: Use a reverse proxy (nginx, Apache) with SSL certificate
@@ -109,19 +109,11 @@ const PORT = process.env.PORT || 5000;
 //   https.createServer(options, app).listen(PORT);
 
 if (require.main === module) {
-    if (!PORT) {
-        console.error('PORT environment variable is not set');
-        process.exit(1);
-    }
-    
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
         if (process.env.NODE_ENV !== 'production') {
             console.log('⚠️  WARNING: Running in development mode. Use HTTPS in production!');
         }
-    }).on('error', (error) => {
-        console.error('Error starting server:', error);
-        process.exit(1);
     });
 }
 

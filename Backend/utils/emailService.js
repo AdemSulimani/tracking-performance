@@ -12,54 +12,20 @@ const createTransporter = () => {
         return null;
     }
 
-    const port = parseInt(process.env.EMAIL_PORT, 10);
-    const isSecure = port === 465;
-    
-    // SendGrid specific configuration
-    const transporterConfig = {
+    return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
-        port: port,
-        secure: isSecure, // true for 465, false for other ports
+        port: parseInt(process.env.EMAIL_PORT, 10),
+        secure: process.env.EMAIL_PORT === '465', // true for 465, false for other ports
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
-        },
-        // Connection timeout options
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 5000, // 5 seconds
-        socketTimeout: 10000, // 10 seconds
-    };
-    
-    // For port 587 (TLS), configure STARTTLS properly
-    if (port === 587) {
-        transporterConfig.requireTLS = true;
-        transporterConfig.tls = {
-            rejectUnauthorized: false
-        };
-    }
-    
-    // For port 465 (SSL), use secure connection
-    if (port === 465) {
-        transporterConfig.secure = true;
-        transporterConfig.tls = {
-            rejectUnauthorized: false
-        };
-    }
-    
-    return nodemailer.createTransport(transporterConfig);
+        }
+    });
 };
 
 // Send verification code email
 const sendVerificationCode = async (email, verificationCode) => {
     try {
-        console.log('Attempting to send verification code email...');
-        console.log('Email config:', {
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
-            user: process.env.EMAIL_USER,
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER
-        });
-        
         const transporter = createTransporter();
         
         if (!transporter) {
