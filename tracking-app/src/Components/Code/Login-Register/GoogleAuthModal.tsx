@@ -17,6 +17,9 @@ export function GoogleAuthModal({ isOpen }: GoogleAuthModalProps) {
 
         const initiateGoogleAuth = async () => {
             try {
+                // Fshi pendingVerificationEmail nëse ekziston (Google OAuth nuk ka nevojë për verification code)
+                localStorage.removeItem('pendingVerificationEmail');
+                
                 // Krijo Google OAuth URL me Authorization Code Flow
                 const scope = 'openid email profile';
                 const responseType = 'code'; // Përdorim 'code' në vend të 'token'

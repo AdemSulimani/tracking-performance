@@ -47,9 +47,11 @@ function App() {
       }
       
       // Nëse nuk jemi në /authentication, ridrejto atje
+      // Por mos ridrejto nëse jemi në /auth-success (Google OAuth) ose në rrugët e tjera të lejuara
       if (location.pathname !== '/login' && 
           location.pathname !== '/register' &&
           location.pathname !== '/forgot-password' &&
+          location.pathname !== '/auth-success' &&
           location.pathname !== '/') {
         navigate('/authentication', { replace: true });
       }

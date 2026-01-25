@@ -54,6 +54,9 @@ export function AuthSuccess() {
                 // Ruaj token dhe user në localStorage
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
+                
+                // Fshi pendingVerificationEmail nëse ekziston (për Google OAuth nuk ka nevojë për verification code)
+                localStorage.removeItem('pendingVerificationEmail');
 
                 // Trego mesazh suksesi
                 setShowSuccess(true);
