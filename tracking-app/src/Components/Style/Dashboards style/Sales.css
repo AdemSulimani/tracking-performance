@@ -145,6 +145,7 @@
     font-weight: 500;
     color: var(--purple-text);
     margin: 0.75rem 0 0 0;
+    padding-left: 1rem;
     font-family: "Inter", sans-serif;
     text-align: left;
     width: 100%;
