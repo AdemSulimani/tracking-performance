@@ -135,6 +135,10 @@ export function ResetPassword() {
                     <div className="resetpassword-no-token">
                         <p className="resetpassword-info">
                             No reset token found. Please check your email for the password reset link.
+                            <br />
+                            <span style={{ fontSize: '13px', color: '#888', fontStyle: 'italic', marginTop: '8px', display: 'block' }}>
+                                💡 Don't see the email? Check your spam folder!
+                            </span>
                         </p>
                         <button 
                             type="button" 
