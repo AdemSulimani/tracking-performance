@@ -112,8 +112,10 @@ export function Header({ isBannerHidden = false }: HeaderProps) {
                                 </a>
                             </li>
                         ))}
+                        <li>
+                            <button className="sidebar-button" onClick={() => { closeMenu(); navigate('/login'); }}>Get started</button>
+                        </li>
                     </ul>
-                    <button className="sidebar-button" onClick={() => { closeMenu(); navigate('/login'); }}>Get started</button>
                 </nav>
             </aside>
         </>
