@@ -39,6 +39,11 @@ export function Forgotpass() {
                     {message && (
                         <div className={`forgotpass-message ${message.type === 'success' ? 'success' : 'error'}`}>
                             {message.text}
+                            {message.type === 'success' && (
+                                <div style={{ marginTop: '10px', fontSize: '14px', color: '#666', fontStyle: 'italic' }}>
+                                    💡 Don't see the email? Check your spam folder!
+                                </div>
+                            )}
                         </div>
                     )}
                     
@@ -61,7 +66,11 @@ export function Forgotpass() {
                 </form>
 
                 <p className="forgotpass-info">
-                    We will send you the instructions on how to reset the password in this email
+                    We will send you the instructions on how to reset the password in this email.
+                    <br />
+                    <span style={{ fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
+                        💡 If you don't see it, check your spam folder!
+                    </span>
                 </p>
             </div>
         </div>

@@ -175,6 +175,9 @@ export function Authentication() {
                         fontSize: '0.9rem'
                     }}>
                         {successMessage}
+                        <div style={{ marginTop: '8px', fontSize: '13px', color: '#666', fontStyle: 'italic' }}>
+                            💡 Don't see the email? Check your spam folder!
+                        </div>
                     </div>
                 )}
                 
@@ -210,6 +213,9 @@ export function Authentication() {
 
                 <div className="authentication-info">
                     <p className="expire-text">The code will expire in 15 minutes</p>
+                    <p style={{ fontSize: '13px', color: '#888', fontStyle: 'italic', marginTop: '8px' }}>
+                        💡 Don't see the code? Check your spam folder!
+                    </p>
                     <button 
                         type="button" 
                         className="resend-button"
