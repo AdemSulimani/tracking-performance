@@ -204,7 +204,16 @@ const login = async (req, res) => {
         }
 
         // 5. Krahaso password-in e hash-uar me atë të dërguar (me bcrypt.compare)
-        const isPasswordValid = await user.comparePassword(password);
+        let isPasswordValid;
+        try {
+            isPasswordValid = await user.comparePassword(password);
+        } catch (compareError) {
+            console.error('Error comparing password:', compareError);
+            return res.status(500).json({ 
+                success: false,
+                message: 'Server error during password verification'
+            });
+        }
         
         // 6. Nëse nuk përputhen, kthej "Invalid credentials"
         if (!isPasswordValid) {
@@ -222,24 +231,37 @@ const login = async (req, res) => {
         verificationCodeExpires.setMinutes(verificationCodeExpires.getMinutes() + 15);
 
         // 8. Ruaj kod verifikimi në databazë
-        user.verificationCode = verificationCode;
-        user.verificationCodeExpires = verificationCodeExpires;
-        user.isVerified = false;
-        await user.save();
+        try {
+            user.verificationCode = verificationCode;
+            user.verificationCodeExpires = verificationCodeExpires;
+            user.isVerified = false;
+            await user.save();
+        } catch (saveError) {
+            console.error('Error saving verification code:', saveError);
+            return res.status(500).json({
+                success: false,
+                message: 'Server error during login. Please try again.'
+            });
+        }
 
         // 9. Dërgo kod verifikimi në email
         try {
             await sendVerificationCode(user.email, verificationCode);
         } catch (emailError) {
             console.error('Error sending verification email:', emailError);
+            console.error('Email error details:', emailError.response?.body || emailError.message);
             // Nëse dërgimi i email-it dështon, fshi kod verifikimi dhe kthej gabim
-            user.verificationCode = undefined;
-            user.verificationCodeExpires = undefined;
-            await user.save();
+            try {
+                user.verificationCode = undefined;
+                user.verificationCodeExpires = undefined;
+                await user.save();
+            } catch (cleanupError) {
+                console.error('Error cleaning up verification code:', cleanupError);
+            }
             
             return res.status(500).json({
                 success: false,
-                message: 'Failed to send verification code. Please try again.'
+                message: 'Failed to send verification code. Please check your email configuration or try again later.'
             });
         }
 
@@ -259,6 +281,7 @@ const login = async (req, res) => {
 
     } catch (error) {
         console.error('Login error:', error);
+        console.error('Login error stack:', error.stack);
         res.status(500).json({ 
             success: false,
             message: 'Server error during login',

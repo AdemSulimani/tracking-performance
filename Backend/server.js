@@ -58,12 +58,8 @@ const corsOptions = {
             
             // Also allow any Vercel subdomain if FRONTEND_URL is a Vercel domain
             if (normalizedFrontendUrl.includes('.vercel.app')) {
-                // Extract base domain pattern (e.g., tracking-performance-*.vercel.app)
-                const domainMatch = normalizedFrontendUrl.match(/https?:\/\/([^.]+)\.vercel\.app/);
-                if (domainMatch) {
-                    // Allow any subdomain of vercel.app for this project
-                    allowedOrigins.push(new RegExp(`^https://[^.]+\.vercel\.app$`));
-                }
+                // Allow any Vercel app domain (including preview deployments)
+                allowedOrigins.push(new RegExp(`^https://[^/]+\.vercel\.app$`));
             }
         }
         
@@ -141,7 +137,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // SECURITY NOTE: In production, use HTTPS
 // Option 1: Use a reverse proxy (nginx, Apache) with SSL certificate
