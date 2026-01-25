@@ -15,7 +15,8 @@ const createTransporter = () => {
     const port = parseInt(process.env.EMAIL_PORT, 10);
     const isSecure = port === 465;
     
-    return nodemailer.createTransport({
+    // SendGrid specific configuration
+    const transporterConfig = {
         host: process.env.EMAIL_HOST,
         port: port,
         secure: isSecure, // true for 465, false for other ports
@@ -23,23 +24,42 @@ const createTransporter = () => {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
         },
-        // Connection timeout options for Render
-        connectionTimeout: 60000, // 60 seconds
-        greetingTimeout: 30000, // 30 seconds
-        socketTimeout: 60000, // 60 seconds
-        // TLS options for better compatibility
-        tls: {
-            rejectUnauthorized: false, // Allow self-signed certificates if needed
-            ciphers: 'SSLv3' // Use SSLv3 for compatibility
-        },
-        // For non-secure connections (port 587), use STARTTLS
-        requireTLS: !isSecure && port === 587
-    });
+        // Connection timeout options
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 5000, // 5 seconds
+        socketTimeout: 10000, // 10 seconds
+    };
+    
+    // For port 587 (TLS), configure STARTTLS properly
+    if (port === 587) {
+        transporterConfig.requireTLS = true;
+        transporterConfig.tls = {
+            rejectUnauthorized: false
+        };
+    }
+    
+    // For port 465 (SSL), use secure connection
+    if (port === 465) {
+        transporterConfig.secure = true;
+        transporterConfig.tls = {
+            rejectUnauthorized: false
+        };
+    }
+    
+    return nodemailer.createTransport(transporterConfig);
 };
 
 // Send verification code email
 const sendVerificationCode = async (email, verificationCode) => {
     try {
+        console.log('Attempting to send verification code email...');
+        console.log('Email config:', {
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            user: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER
+        });
+        
         const transporter = createTransporter();
         
         if (!transporter) {
