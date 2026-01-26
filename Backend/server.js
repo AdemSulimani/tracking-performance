@@ -22,6 +22,9 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+
+app.set('trust proxy', true);
+
 // Security Middleware
 // IMPORTANT: In production, ensure HTTPS is enabled
 // Use a reverse proxy (nginx, Apache) or enable HTTPS directly
