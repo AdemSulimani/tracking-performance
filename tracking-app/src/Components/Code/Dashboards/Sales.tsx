@@ -493,7 +493,7 @@ export function Sales() {
             <aside className="sales-sidebar">
                 <div className="sidebar-header">
                     <div className="sidebar-title-container">
-                        <h2 className="sidebar-title">Sales Dashboard</h2>
+                        <h2 className="sidebar-title sales-heading">Sales Dashboard</h2>
                         <div className="user-menu-container" ref={menuRef}>
                             <button 
                                 className="logout-button" 
@@ -540,7 +540,7 @@ export function Sales() {
                         </div>
                     </div>
                     {user && (
-                        <p className="sidebar-greeting">Hello {user.name}</p>
+                        <p className="sidebar-greeting sidebar-text">Hello {user.name}</p>
                     )}
                 </div>
                 <nav className="sidebar-nav">
