@@ -71,7 +71,7 @@
 .header-button {
     background: none;
     border: none;
-    color: var(--nav-text);
+    color: var(--purple-text);
     font-size: 15.79px;
     font-weight: 600;
     cursor: pointer;
@@ -81,7 +81,7 @@
 }
 
 .header-button:hover {
-    color: var(--black-color);
+    color: var(--light-purple);
 }
 
 .hamburger-menu {
@@ -230,7 +230,7 @@ div .sidebar-header {
 .sidebar-button {
     background: none;
     border: none;
-    color: var(--nav-text);
+    color: var(--purple-text);
     font-size: 15.79px;
     font-weight: 600;
     cursor: pointer;
@@ -242,7 +242,7 @@ div .sidebar-header {
 }
 
 .sidebar-button:hover {
-    color: var(--black-color);
+    color: var(--light-purple);
 }
 
 /* Responsive styles */
