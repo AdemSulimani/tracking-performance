@@ -22,6 +22,10 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+// Trust proxy - Required when behind a reverse proxy (e.g., Render, Heroku, nginx)
+// This allows express-rate-limit to correctly identify client IPs from X-Forwarded-For header
+app.set('trust proxy', true);
+
 // Security Middleware
 // IMPORTANT: In production, ensure HTTPS is enabled
 // Use a reverse proxy (nginx, Apache) or enable HTTPS directly
