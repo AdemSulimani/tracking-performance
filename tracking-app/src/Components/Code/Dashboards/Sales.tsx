@@ -139,9 +139,9 @@ export function Sales() {
     }
 
     const parseExcelData = (jsonData: any[]): SalesData => {
-        // Expected Excel format for agents:
-        // Columns: Name, Listings Managed, Deals Closed, Revenue, Conversion Rate
-        // Or properties: Address, List Price, Sale Price, Days on Market, Status, Agent
+        // Expected Excel format for sales reps:
+        // Columns: Name, Opportunities Managed, Deals Closed, Revenue, Conversion Rate
+        // Or opportunities: Company, Deal Value, Closed Value, Days in Pipeline, Status, Sales Rep
         
         const agents: Agent[] = jsonData
             .filter(row => row['Name'] && row['Listings Managed'] !== undefined)
@@ -234,7 +234,7 @@ export function Sales() {
                         {/* KPI Cards */}
                         <div className="kpi-grid">
                             <div className="kpi-card">
-                                <div className="kpi-label">Properties Listed</div>
+                                <div className="kpi-label">Opportunities Created</div>
                                 <div className="kpi-value">{salesData.propertiesListed.toLocaleString()}</div>
                                 <div className="kpi-change positive">+12.5% vs last quarter</div>
                             </div>
@@ -258,7 +258,7 @@ export function Sales() {
                         {/* Charts Section */}
                         <div className="charts-section">
                             <div className="chart-card">
-                                <h3 className="chart-title">Property Performance Over Time</h3>
+                                <h3 className="chart-title">Sales Performance Over Time</h3>
                                 <div className="chart-container">
                                     <div className="bar-chart">
                                         {salesData.propertyPerformance.map((data, index) => (
@@ -289,11 +289,11 @@ export function Sales() {
                                 <div className="chart-legend">
                                     <div className="legend-item">
                                         <span className="legend-color" style={{ background: '#991B1B' }}></span>
-                                        <span>Listed</span>
+                                        <span>Created</span>
                                     </div>
                                     <div className="legend-item">
                                         <span className="legend-color" style={{ background: '#DC2626' }}></span>
-                                        <span>Sold</span>
+                                        <span>Closed</span>
                                     </div>
                                 </div>
                             </div>
@@ -346,15 +346,15 @@ export function Sales() {
                             </div>
                         </div>
 
-                        {/* Agents Table */}
+                        {/* Sales Team Table */}
                         <div className="table-section">
-                            <h3 className="section-title">Agent Performance</h3>
+                            <h3 className="section-title">Sales Team Performance</h3>
                             <div className="table-wrapper">
                                 <table className="agent-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Listings Managed</th>
+                                            <th>Opportunities Managed</th>
                                             <th>Deals Closed</th>
                                             <th>Revenue</th>
                                             <th>Conversion Rate</th>
@@ -379,13 +379,13 @@ export function Sales() {
             case 'Agents':
                 return (
                     <div className="table-section">
-                        <h3 className="section-title">All Agents</h3>
+                        <h3 className="section-title">All Sales Reps</h3>
                         <div className="table-wrapper">
                             <table className="agent-table">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Listings Managed</th>
+                                        <th>Opportunities Managed</th>
                                         <th>Deals Closed</th>
                                         <th>Revenue</th>
                                         <th>Conversion Rate</th>
@@ -409,23 +409,23 @@ export function Sales() {
             case 'Listings':
                 return (
                     <div className="table-section">
-                        <h3 className="section-title">Property Listings</h3>
+                        <h3 className="section-title">Sales Opportunities</h3>
                         <p className="section-description">
                             {salesData.properties.length > 0 
-                                ? `Showing ${salesData.properties.length} properties from uploaded data.`
-                                : 'Upload property data to view listings here.'}
+                                ? `Showing ${salesData.properties.length} opportunities from uploaded data.`
+                                : 'Upload sales data to view opportunities here.'}
                         </p>
                         {salesData.properties.length > 0 && (
                             <div className="table-wrapper">
                                 <table className="agent-table">
                                     <thead>
                                         <tr>
-                                            <th>Address</th>
-                                            <th>List Price</th>
-                                            <th>Sale Price</th>
-                                            <th>Days on Market</th>
+                                            <th>Company</th>
+                                            <th>Deal Value</th>
+                                            <th>Closed Value</th>
+                                            <th>Days in Pipeline</th>
                                             <th>Status</th>
-                                            <th>Agent</th>
+                                            <th>Sales Rep</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -472,14 +472,14 @@ export function Sales() {
             case 'Upload Data':
                 return (
                     <div className="upload-section">
-                        <h3 className="section-title">Upload Property & Agent Data</h3>
+                        <h3 className="section-title">Upload Sales Data</h3>
                         <p className="upload-description">
-                            Upload your Excel file containing property listings and agent performance data. 
+                            Upload your Excel file containing sales opportunities and team performance data. 
                             The system will automatically process the information and generate comprehensive performance insights across the dashboard.
                             <br /><br />
-                            <strong>Expected format for Agents:</strong> Name, Listings Managed, Deals Closed, Revenue, Conversion Rate
+                            <strong>Expected format for Sales Reps:</strong> Name, Opportunities Managed, Deals Closed, Revenue, Conversion Rate
                             <br />
-                            <strong>Expected format for Properties:</strong> Address, List Price, Sale Price, Days on Market, Status, Agent
+                            <strong>Expected format for Opportunities:</strong> Company, Deal Value, Closed Value, Days in Pipeline, Status, Sales Rep
                         </p>
                         <div
                             className="upload-dropzone"
@@ -508,7 +508,7 @@ export function Sales() {
                         <h3 className="section-title">Performance Analytics</h3>
                         <div className="charts-section">
                             <div className="chart-card">
-                                <h3 className="chart-title">Property Performance Over Time</h3>
+                                <h3 className="chart-title">Sales Performance Over Time</h3>
                                 <div className="chart-container">
                                     <div className="bar-chart">
                                         {salesData.propertyPerformance.map((data, index) => (
@@ -539,11 +539,11 @@ export function Sales() {
                                 <div className="chart-legend">
                                     <div className="legend-item">
                                         <span className="legend-color" style={{ background: '#991B1B' }}></span>
-                                        <span>Listed</span>
+                                        <span>Created</span>
                                     </div>
                                     <div className="legend-item">
                                         <span className="legend-color" style={{ background: '#DC2626' }}></span>
-                                        <span>Sold</span>
+                                        <span>Closed</span>
                                     </div>
                                 </div>
                             </div>
@@ -682,13 +682,13 @@ export function Sales() {
                         className={`nav-item ${activeSection === 'Agents' ? 'active' : ''}`}
                         onClick={() => setActiveSection('Agents')}
                     >
-                        Agents
+                        Sales Team
                     </button>
                     <button
                         className={`nav-item ${activeSection === 'Listings' ? 'active' : ''}`}
                         onClick={() => setActiveSection('Listings')}
                     >
-                        Listings
+                        Opportunities
                     </button>
                     <button
                         className={`nav-item ${activeSection === 'Deals' ? 'active' : ''}`}
