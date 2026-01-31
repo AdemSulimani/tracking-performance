@@ -231,6 +231,38 @@ export function Sales() {
             case 'Overview':
     return (
         <>
+                        {/* Upload Data Section - First */}
+                        <div className="upload-section">
+                            <h3 className="section-title">Upload Sales Data</h3>
+                            <p className="upload-description">
+                                Upload your Excel file containing sales opportunities and team performance data. 
+                                The system will automatically process the information and generate comprehensive performance insights across the dashboard.
+                                <br /><br />
+                                <strong>Expected format for Sales Reps:</strong> Name, Opportunities Managed, Deals Closed, Revenue, Conversion Rate
+                                <br />
+                                <strong>Expected format for Opportunities:</strong> Company, Deal Value, Closed Value, Days in Pipeline, Status, Sales Rep
+                            </p>
+                            <div
+                                className="upload-dropzone"
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="upload-icon">📊</div>
+                                <p className="upload-text">
+                                    <strong>Drop your Excel file here</strong> or click to browse
+                                </p>
+                                <p className="upload-hint">Supports .xlsx and .xls formats</p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    onChange={handleFileUpload}
+                                    style={{ display: 'none' }}
+                                />
+                            </div>
+                        </div>
+
                         {/* KPI Cards */}
                         <div className="kpi-grid">
                             <div className="kpi-card">
@@ -683,12 +715,6 @@ export function Sales() {
                         onClick={() => setActiveSection('Agents')}
                     >
                         Sales Team
-                    </button>
-                    <button
-                        className={`nav-item ${activeSection === 'Listings' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Listings')}
-                    >
-                        Opportunities
                     </button>
                     <button
                         className={`nav-item ${activeSection === 'Deals' ? 'active' : ''}`}
