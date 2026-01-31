@@ -83,7 +83,9 @@ const apiLimiter = rateLimit({
         message: 'Too many requests from this IP, please try again later'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    // Skip OPTIONS requests (preflight) - they shouldn't count towards rate limit
+    skip: (req) => req.method === 'OPTIONS'
 });
 
 // Rate limiter for reset password attempts
