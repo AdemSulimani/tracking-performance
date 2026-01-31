@@ -2,37 +2,39 @@
     width: 100%;
     min-height: 100vh;
     display: flex;
-    background: white;
+    background: #f8fafc;
     font-family: "Inter", sans-serif;
     margin: 0;
     padding-top: 0;
     margin-top: -132px;
+    overflow-x: hidden;
 }
 
 /* Sidebar Styles */
 .sales-sidebar {
     width: 260px;
-    min-height: 100vh;
-    background: var(--purple-background);
-    border-right: 1px solid rgba(69, 51, 184, 0.1);
+    background: #FEF2F2;
+    border-right: 1px solid rgba(220, 38, 38, 0.1);
     padding: 2.5rem 0;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     height: 100vh;
     overflow-y: auto;
     box-sizing: border-box;
+    z-index: 100;
 }
 
-.sidebar-header {
+.sales-sidebar .sidebar-header {
     padding: 2rem 2rem 2rem 2rem;
-    border-bottom: 1px solid rgba(69, 51, 184, 0.1);
+    border-bottom: 1px solid rgba(220, 38, 38, 0.1);
     margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 }
 
-.sidebar-title-container {
+.sales-sidebar .sidebar-title-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -40,16 +42,16 @@
     gap: 0.5rem;
 }
 
-.sidebar-title {
+.sales-sidebar .sidebar-title {
     font-size: 24px;
     font-weight: 700;
-    color: var(--black-color);
+    color: #991B1B;
     margin: 0;
     font-family: "Inter", sans-serif;
     flex: 1;
 }
 
-.logout-button {
+.sales-sidebar .logout-button {
     background: transparent;
     border: none;
     cursor: pointer;
@@ -61,26 +63,26 @@
     transition: opacity 0.2s ease;
 }
 
-.logout-button:hover {
+.sales-sidebar .logout-button:hover {
     opacity: 0.7;
 }
 
-.logout-button svg {
+.sales-sidebar .logout-button svg {
     width: 20px;
     height: 20px;
 }
 
-.user-menu-container {
+.sales-sidebar .user-menu-container {
     position: relative;
 }
 
-.user-menu-dropdown {
+.sales-sidebar .user-menu-dropdown {
     position: absolute;
     top: 100%;
     right: 0;
     margin-top: 0.5rem;
     background: white;
-    border: 1px solid rgba(69, 51, 184, 0.2);
+    border: 1px solid rgba(220, 38, 38, 0.2);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 180px;
@@ -88,7 +90,7 @@
     overflow: hidden;
 }
 
-.user-menu-item {
+.sales-sidebar .user-menu-item {
     width: 100%;
     padding: 0.75rem 1rem;
     border: none;
@@ -105,50 +107,45 @@
     transition: background-color 0.2s ease;
 }
 
-.user-menu-item:hover {
-    background-color: rgba(69, 51, 184, 0.08);
+.sales-sidebar .user-menu-item:hover {
+    background-color: rgba(220, 38, 38, 0.08);
 }
 
-.user-menu-item.delete {
+.sales-sidebar .user-menu-item.delete {
     color: #dc2626;
 }
 
-.user-menu-item.delete:hover {
+.sales-sidebar .user-menu-item.delete:hover {
     background-color: rgba(220, 38, 38, 0.1);
 }
 
-.user-menu-item svg {
+.sales-sidebar .user-menu-item svg {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
 }
 
-.sidebar-greeting {
+.sales-sidebar .sidebar-greeting {
     font-size: 16px;
     font-weight: 500;
-    color: var(--purple-text);
+    color: #991B1B;
     margin: 0.5rem 0 0 0;
     font-family: "Inter", sans-serif;
     text-align: left;
 }
 
-.sidebar-nav {
+.sales-sidebar .sidebar-nav {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     padding: 0 1.5rem;
 }
 
-div.sidebar-header {
-    flex-direction: column;
-    padding-left: 0.8rem;
-}
-
-.nav-item {
+.sales-sidebar .nav-item {
     padding: 14px 16px;
     border: none;
     background: transparent;
-    color: var(--nav-text);
+    color: #64748b;
     font-size: 16px;
     font-weight: 500;
     font-family: "Inter", sans-serif;
@@ -158,14 +155,14 @@ div.sidebar-header {
     transition: all 0.2s ease;
 }
 
-.nav-item:hover {
-    background: rgba(69, 51, 184, 0.08);
-    color: var(--purple-text);
+.sales-sidebar .nav-item:hover {
+    background: rgba(220, 38, 38, 0.08);
+    color: #991B1B;
 }
 
-.nav-item.active {
-    background: rgba(69, 51, 184, 0.15);
-    color: var(--purple-text);
+.sales-sidebar .nav-item.active {
+    background: rgba(220, 38, 38, 0.15);
+    color: #991B1B;
     font-weight: 600;
 }
 
@@ -175,10 +172,11 @@ div.sidebar-header {
     padding: 2rem;
     padding-top: 50px;
     margin-top: 0;
+    margin-left: 260px;
     overflow-y: auto;
-    overflow-x: auto;
-    background: white;
-    box-sizing: border-box;
+    overflow-x: hidden;
+    background: #f8fafc;
+    min-height: 100vh;
 }
 
 .sales-content {
@@ -188,160 +186,139 @@ div.sidebar-header {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    box-sizing: border-box;
-    overflow-x: hidden;
 }
 
-.dashboard-title {
+.sales-content .dashboard-title {
     font-size: 32px;
     font-weight: 700;
-    color: var(--black-color);
+    color: #0f172a;
     margin: 0;
     padding-top: 1.5rem;
     font-family: "Inter", sans-serif;
 }
 
 /* KPI Cards */
-.kpi-grid {
+.sales-content .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
 }
 
-.kpi-card {
+.sales-content .kpi-card {
     background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.kpi-card:hover {
+.sales-content .kpi-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.2);
 }
 
-.kpi-label {
+.sales-content .kpi-label {
     font-size: 14px;
-    color: var(--nav-text);
+    color: #64748b;
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-family: "Inter", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.kpi-value {
-    font-size: 32px;
+.sales-content .kpi-value {
+    font-size: 36px;
     font-weight: 700;
-    color: var(--black-color);
+    color: #0f172a;
     margin-bottom: 0.5rem;
     font-family: "Inter", sans-serif;
 }
 
-.kpi-change {
+.sales-content .kpi-change {
     font-size: 13px;
     font-weight: 500;
     font-family: "Inter", sans-serif;
 }
 
-.kpi-change.positive {
+.sales-content .kpi-change.positive {
     color: #10b981;
 }
 
-.kpi-change.negative {
+.sales-content .kpi-change.negative {
     color: #ef4444;
 }
 
 /* Charts Section */
-.charts-section {
+.sales-content .charts-section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 1.5rem;
-    width: 100%;
-    box-sizing: border-box;
 }
 
-.chart-card {
+.sales-content .chart-card {
     background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    box-sizing: border-box;
-    min-width: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     overflow: hidden;
 }
 
-.chart-title {
-    font-size: 18px;
+.sales-content .chart-title {
+    font-size: 20px;
     font-weight: 600;
-    color: var(--black-color);
+    color: #0f172a;
     margin: 0 0 1.5rem 0;
     font-family: "Inter", sans-serif;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
 }
 
-.chart-container {
+.sales-content .chart-container {
     width: 100%;
     height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow-x: auto;
-    overflow-y: hidden;
-    box-sizing: border-box;
-    -webkit-overflow-scrolling: touch;
-}
-
-.chart-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.chart-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.chart-container::-webkit-scrollbar-thumb {
-    background: var(--purple-text);
-    border-radius: 4px;
-}
-
-.chart-container::-webkit-scrollbar-thumb:hover {
-    background: #4a3fb8;
+    overflow: hidden;
+    position: relative;
 }
 
 /* Bar Chart */
-.bar-chart {
+.sales-content .bar-chart {
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
     width: 100%;
-    min-width: fit-content;
     height: 100%;
     gap: 1rem;
-    padding: 1rem 0.5rem;
-    box-sizing: border-box;
+    padding: 1rem 0;
+    min-width: 0;
 }
 
-.bar-wrapper {
+.sales-content .bar-wrapper {
     flex: 1;
-    min-width: 60px;
-    max-width: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
     height: 100%;
     justify-content: flex-end;
-    box-sizing: border-box;
+    gap: 0.25rem;
 }
 
-.bar {
+.sales-content .bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
     width: 100%;
-    background: linear-gradient(180deg, var(--purple-text) 0%, var(--light-purple) 100%);
-    border-radius: 8px 8px 0 0;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.sales-content .bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
     position: relative;
     min-height: 20px;
     transition: opacity 0.2s ease;
@@ -351,227 +328,345 @@ div.sidebar-header {
     padding-top: 0.5rem;
 }
 
-.bar:hover {
+.sales-content .bar-listed {
+    background: linear-gradient(180deg, #991B1B 0%, #DC2626 100%);
+}
+
+.sales-content .bar-sold {
+    background: linear-gradient(180deg, #DC2626 0%, #F87171 100%);
+}
+
+.sales-content .bar:hover {
     opacity: 0.9;
 }
 
-.bar-value {
-    font-size: 12px;
+.sales-content .bar-value {
+    font-size: 11px;
     font-weight: 600;
     color: white;
     font-family: "Inter", sans-serif;
 }
 
-.bar-label {
-    font-size: 12px;
-    color: var(--nav-text);
+.sales-content .bar-label {
+    font-size: 13px;
+    color: #64748b;
     margin-top: 0.5rem;
     font-weight: 500;
     font-family: "Inter", sans-serif;
-    word-wrap: break-word;
-    text-align: center;
-    max-width: 100%;
 }
 
-/* Funnel Chart */
-.funnel-chart {
+/* Line Chart */
+.sales-content .line-chart {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    align-items: flex-end;
+    justify-content: space-around;
     width: 100%;
     height: 100%;
-    justify-content: center;
-    padding: 1rem 0;
-}
-
-.funnel-stage {
-    width: 100%;
-}
-
-.funnel-bar-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-}
-
-.funnel-bar {
-    background: linear-gradient(90deg, var(--purple-background) 0%, rgba(69, 51, 184, 0.2) 100%);
-    border: 1px solid rgba(69, 51, 184, 0.3);
-    border-radius: 10px;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-width: 150px;
-    max-width: 80%;
-    transition: transform 0.2s ease;
+    gap: 0.5rem;
+    padding: 1.5rem 0.5rem 2.5rem 0.5rem;
+    position: relative;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
-.funnel-bar:hover {
-    transform: scale(1.02);
+.sales-content .line-chart-svg {
+    overflow: visible;
 }
 
-.funnel-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--black-color);
-    font-family: "Inter", sans-serif;
-    word-wrap: break-word;
-    flex-shrink: 1;
+.sales-content .line-point-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 30px;
+    overflow: visible;
 }
 
-.funnel-value {
-    font-size: 18px;
+.sales-content .line-point {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #DC2626 0%, #F87171 100%);
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+    transition: transform 0.2s ease;
+    z-index: 2;
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    max-height: 40px;
+}
+
+.sales-content .line-point:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(220, 38, 38, 0.4);
+}
+
+.sales-content .point-value {
+    font-size: 12px;
     font-weight: 700;
-    color: var(--purple-text);
+    color: white;
     font-family: "Inter", sans-serif;
-    flex-shrink: 0;
-    margin-left: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    line-height: 1;
+}
+
+.sales-content .line-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+    font-family: "Inter", sans-serif;
+    position: absolute;
+    bottom: -22px;
+    white-space: nowrap;
+}
+
+.sales-content .chart-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.sales-content .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 14px;
+    color: #64748b;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
 }
 
 /* Table Section */
-.table-section {
+.sales-content .table-section {
     background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.section-title {
+.sales-content .section-title {
     font-size: 20px;
     font-weight: 600;
-    color: var(--black-color);
+    color: #0f172a;
     margin: 0 0 1.5rem 0;
     font-family: "Inter", sans-serif;
 }
 
-.table-wrapper {
-    overflow-x: auto;
-}
-
-.employee-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: "Inter", sans-serif;
-}
-
-.employee-table thead {
-    background: var(--purple-background);
-}
-
-.employee-table th {
-    padding: 1rem;
-    text-align: left;
+.sales-content .section-description {
     font-size: 14px;
-    font-weight: 600;
-    color: var(--black-color);
-    border-bottom: 2px solid rgba(69, 51, 184, 0.2);
-    font-family: "Inter", sans-serif;
-}
-
-.employee-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e5e5;
-    font-size: 14px;
-    color: var(--nav-text);
-    font-family: "Inter", sans-serif;
-}
-
-.employee-table tbody tr:hover {
-    background: rgba(69, 51, 184, 0.05);
-}
-
-.employee-name {
-    font-weight: 600;
-    color: var(--black-color);
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: "Inter", sans-serif;
-}
-
-.status-badge.status-active {
-    background: rgba(69, 51, 184, 0.1);
-    color: var(--purple-text);
-}
-
-.status-badge.status-on-target {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.status-badge.status-exceeding {
-    background: rgba(16, 185, 129, 0.2);
-    color: #059669;
-}
-
-/* Upload Section */
-.upload-section {
-    background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.upload-description {
-    font-size: 14px;
-    color: var(--nav-text);
+    color: #64748b;
     margin: 0 0 1.5rem 0;
     line-height: 1.6;
     font-family: "Inter", sans-serif;
 }
 
-.upload-dropzone {
-    border: 2px dashed #e5e5e5;
-    border-radius: 15px;
+.sales-content .table-wrapper {
+    overflow-x: auto;
+}
+
+.sales-content .agent-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .agent-table thead {
+    background: #FEF2F2;
+}
+
+.sales-content .agent-table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    border-bottom: 2px solid rgba(220, 38, 38, 0.2);
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .agent-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #475569;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .agent-table tbody tr:hover {
+    background: rgba(220, 38, 38, 0.05);
+}
+
+.sales-content .agent-name {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.sales-content .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .status-badge.active {
+    background: rgba(220, 38, 38, 0.1);
+    color: #991B1B;
+}
+
+.sales-content .status-badge.sold {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.sales-content .status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+/* Upload Section */
+.sales-content .upload-section {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sales-content .upload-description {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.7;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .upload-dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
     padding: 3rem 2rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: var(--purple-background);
+    background: #FEF2F2;
 }
 
-.upload-dropzone:hover {
-    border-color: var(--purple-text);
-    background: rgba(69, 51, 184, 0.05);
+.sales-content .upload-dropzone:hover {
+    border-color: #DC2626;
+    background: rgba(220, 38, 38, 0.05);
 }
 
-.upload-icon {
+.sales-content .upload-icon {
     font-size: 48px;
     margin-bottom: 1rem;
 }
 
-.upload-text {
+.sales-content .upload-text {
     font-size: 16px;
-    color: var(--black-color);
+    color: #0f172a;
     margin: 0 0 0.5rem 0;
     font-weight: 500;
     font-family: "Inter", sans-serif;
 }
 
-.upload-hint {
+.sales-content .upload-hint {
     font-size: 14px;
-    color: var(--nav-text);
+    color: #64748b;
     margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+/* Deals Summary */
+.sales-content .deals-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.sales-content .summary-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.sales-content .summary-label {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .summary-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    font-family: "Inter", sans-serif;
+}
+
+/* Analytics Section */
+.sales-content .analytics-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Settings Section */
+.sales-content .settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sales-content .settings-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.sales-content .settings-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+    font-family: "Inter", sans-serif;
+}
+
+.sales-content .settings-card p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.6;
     font-family: "Inter", sans-serif;
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-    .charts-section {
+    .sales-content .charts-section {
         grid-template-columns: 1fr;
-    }
-    
-    .sales-content {
-        max-width: 100%;
     }
 }
 
@@ -579,7 +674,6 @@ div.sidebar-header {
     .sales-dashboard {
         flex-direction: column;
         margin-top: -122px;
-        overflow-x: hidden;
     }
 
     .sales-sidebar {
@@ -587,126 +681,72 @@ div.sidebar-header {
         height: auto;
         min-height: auto;
         position: relative;
+        left: 0;
         border-right: none;
-        border-bottom: 1px solid rgba(69, 51, 184, 0.1);
+        border-bottom: 1px solid rgba(220, 38, 38, 0.1);
         padding: 1rem 0;
+        z-index: 1;
     }
 
-    .sidebar-nav {
+    .sales-sidebar .sidebar-nav {
         flex-direction: row;
         overflow-x: auto;
         padding: 0 1rem;
     }
 
-    .nav-item {
+    .sales-sidebar .nav-item {
         white-space: nowrap;
         flex-shrink: 0;
     }
 
     .sales-main {
+        margin-left: 0;
         padding: 1.5rem;
         padding-top: 1.5rem;
-        width: 100%;
-        overflow-x: auto;
-    }
-    
-    .sales-content {
-        max-width: 100%;
-        width: 100%;
     }
 
-    .kpi-grid {
+    .sales-content .kpi-grid {
         grid-template-columns: 1fr;
     }
 
-    .dashboard-title {
+    .sales-content .dashboard-title {
         font-size: 28px;
     }
 
-    .chart-container {
+    .sales-content .chart-container {
         height: 250px;
-    }
-    
-    .charts-section {
-        grid-template-columns: 1fr;
-        min-width: 0;
-    }
-    
-    .chart-card {
-        min-width: 0;
-        overflow: visible;
-    }
-    
-    .funnel-bar {
-        max-width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     .sales-dashboard {
         margin-top: -112px;
-        overflow-x: hidden;
     }
 
     .sales-main {
         padding: 1rem;
         padding-top: 1rem;
-        width: 100%;
-        overflow-x: auto;
-    }
-    
-    .sales-content {
-        max-width: 100%;
-        width: 100%;
     }
 
-    .dashboard-title {
+    .sales-content .dashboard-title {
         font-size: 24px;
     }
 
-    .kpi-value {
+    .sales-content .kpi-value {
         font-size: 28px;
     }
 
-    .chart-container {
+    .sales-content .chart-container {
         height: 200px;
     }
-    
-    .bar-wrapper {
-        min-width: 50px;
-        max-width: 80px;
-    }
-    
-    .bar-label {
-        font-size: 10px;
-    }
-    
-    .chart-title {
-        font-size: 16px;
-    }
 
-    .employee-table {
+    .sales-content .agent-table {
         font-size: 12px;
-        min-width: 500px;
     }
 
-    .employee-table th,
-    .employee-table td {
+    .sales-content .agent-table th,
+    .sales-content .agent-table td {
         padding: 0.75rem 0.5rem;
-    }
-    
-    .funnel-bar {
-        min-width: 120px;
-        max-width: 100%;
-        padding: 0.75rem 1rem;
-    }
-    
-    .funnel-label {
-        font-size: 12px;
-    }
-    
-    .funnel-value {
-        font-size: 16px;
     }
 }
 
