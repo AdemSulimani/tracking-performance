@@ -3,27 +3,36 @@ import * as XLSX from 'xlsx'
 import '../../Style/Dashboards style/Sales.css'
 import { useAuth } from '../../../context/AuthContext'
 
-interface Employee {
+interface Agent {
     name: string
+    listingsManaged: number
     dealsClosed: number
-    revenueGenerated: number
+    revenue: number
     conversionRate: number
-    status: 'Active' | 'On Target' | 'Exceeding'
+}
+
+interface Property {
+    address: string
+    listPrice: number
+    salePrice: number
+    daysOnMarket: number
+    status: string
+    agent: string
 }
 
 interface SalesData {
-    totalRevenue: number
+    propertiesListed: number
     dealsClosed: number
-    conversionRate: number
+    totalRevenue: number
     averageDealValue: number
-    employees: Employee[]
-    salesPerformance: { month: string; revenue: number }[]
-    funnel: { stage: string; count: number }[]
+    agents: Agent[]
+    properties: Property[]
+    propertyPerformance: { month: string; listed: number; sold: number }[]
+    dealsOverTime: { month: string; deals: number; revenue: number }[]
 }
 
 export function Sales() {
     const { user, logout } = useAuth()
-    const [activeSection, setActiveSection] = useState('Overview')
     const [showUserMenu, setShowUserMenu] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
 
@@ -68,33 +77,41 @@ export function Sales() {
             }
         }
     }
+    const [activeSection, setActiveSection] = useState('Overview')
     const [salesData, setSalesData] = useState<SalesData>({
-        totalRevenue: 2450000,
-        dealsClosed: 127,
-        conversionRate: 23.5,
-        averageDealValue: 19291,
-        employees: [
-            { name: 'Sarah Johnson', dealsClosed: 18, revenueGenerated: 347000, conversionRate: 28.5, status: 'Exceeding' },
-            { name: 'Michael Chen', dealsClosed: 15, revenueGenerated: 289000, conversionRate: 25.2, status: 'Exceeding' },
-            { name: 'Emily Rodriguez', dealsClosed: 14, revenueGenerated: 270000, conversionRate: 22.8, status: 'On Target' },
-            { name: 'David Thompson', dealsClosed: 12, revenueGenerated: 231000, conversionRate: 20.1, status: 'On Target' },
-            { name: 'Jessica Martinez', dealsClosed: 11, revenueGenerated: 212000, conversionRate: 19.5, status: 'Active' },
-            { name: 'Robert Williams', dealsClosed: 10, revenueGenerated: 193000, conversionRate: 18.2, status: 'Active' },
-            { name: 'Amanda Davis', dealsClosed: 9, revenueGenerated: 174000, conversionRate: 17.8, status: 'Active' },
-            { name: 'James Wilson', dealsClosed: 8, revenueGenerated: 154000, conversionRate: 16.5, status: 'Active' },
+        propertiesListed: 247,
+        dealsClosed: 89,
+        totalRevenue: 12450000,
+        averageDealValue: 139887,
+        agents: [
+            { name: 'Sarah Mitchell', listingsManaged: 42, dealsClosed: 18, revenue: 2516000, conversionRate: 42.9 },
+            { name: 'Michael Chen', listingsManaged: 38, dealsClosed: 16, revenue: 2238000, conversionRate: 42.1 },
+            { name: 'Emily Rodriguez', listingsManaged: 35, dealsClosed: 14, revenue: 1958000, conversionRate: 40.0 },
+            { name: 'David Thompson', listingsManaged: 32, dealsClosed: 12, revenue: 1678000, conversionRate: 37.5 },
+            { name: 'Jessica Martinez', listingsManaged: 28, dealsClosed: 10, revenue: 1399000, conversionRate: 35.7 },
+            { name: 'Robert Williams', listingsManaged: 25, dealsClosed: 9, revenue: 1259000, conversionRate: 36.0 },
+            { name: 'Amanda Davis', listingsManaged: 22, dealsClosed: 7, revenue: 979000, conversionRate: 31.8 },
         ],
-        salesPerformance: [
-            { month: 'Jan', revenue: 180000 },
-            { month: 'Feb', revenue: 210000 },
-            { month: 'Mar', revenue: 195000 },
-            { month: 'Apr', revenue: 230000 },
-            { month: 'May', revenue: 245000 },
-            { month: 'Jun', revenue: 260000 },
+        properties: [],
+        propertyPerformance: [
+            { month: 'Jan', listed: 18, sold: 6 },
+            { month: 'Feb', listed: 22, sold: 8 },
+            { month: 'Mar', listed: 28, sold: 10 },
+            { month: 'Apr', listed: 35, sold: 12 },
+            { month: 'May', listed: 42, sold: 15 },
+            { month: 'Jun', listed: 38, sold: 14 },
+            { month: 'Jul', listed: 45, sold: 16 },
+            { month: 'Aug', listed: 16, sold: 8 },
         ],
-        funnel: [
-            { stage: 'Leads', count: 540 },
-            { stage: 'Qualified', count: 298 },
-            { stage: 'Closed', count: 127 },
+        dealsOverTime: [
+            { month: 'Jan', deals: 6, revenue: 839000 },
+            { month: 'Feb', deals: 8, revenue: 1119000 },
+            { month: 'Mar', deals: 10, revenue: 1399000 },
+            { month: 'Apr', deals: 12, revenue: 1678000 },
+            { month: 'May', deals: 15, revenue: 2098000 },
+            { month: 'Jun', deals: 14, revenue: 1958000 },
+            { month: 'Jul', deals: 16, revenue: 2238000 },
+            { month: 'Aug', deals: 8, revenue: 1119000 },
         ],
     })
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -110,7 +127,6 @@ export function Sales() {
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
             const jsonData = XLSX.utils.sheet_to_json(firstSheet)
 
-            // Parse Excel data and update state
             try {
                 const parsedData = parseExcelData(jsonData)
                 setSalesData(parsedData)
@@ -123,58 +139,68 @@ export function Sales() {
     }
 
     const parseExcelData = (jsonData: any[]): SalesData => {
-        // Expected Excel format:
-        // Columns: Name, Deals Closed, Revenue Generated, Conversion Rate, Status
-        // Plus performance data and funnel data
+        // Expected Excel format for agents:
+        // Columns: Name, Listings Managed, Deals Closed, Revenue, Conversion Rate
+        // Or properties: Address, List Price, Sale Price, Days on Market, Status, Agent
         
-        const employees: Employee[] = jsonData
-            .filter(row => row['Name'] && row['Deals Closed'] !== undefined)
+        const agents: Agent[] = jsonData
+            .filter(row => row['Name'] && row['Listings Managed'] !== undefined)
             .map(row => ({
                 name: String(row['Name'] || ''),
+                listingsManaged: Number(row['Listings Managed'] || 0),
                 dealsClosed: Number(row['Deals Closed'] || 0),
-                revenueGenerated: Number(row['Revenue Generated'] || 0),
+                revenue: Number(row['Revenue'] || 0),
                 conversionRate: Number(row['Conversion Rate'] || 0),
-                status: (row['Status'] === 'Exceeding' || row['Status'] === 'On Target') 
-                    ? row['Status'] as 'Exceeding' | 'On Target'
-                    : 'Active' as const,
             }))
 
-        const totalRevenue = employees.reduce((sum, emp) => sum + emp.revenueGenerated, 0)
-        const dealsClosed = employees.reduce((sum, emp) => sum + emp.dealsClosed, 0)
-        const conversionRate = employees.length > 0
-            ? employees.reduce((sum, emp) => sum + emp.conversionRate, 0) / employees.length
-            : 0
+        const properties: Property[] = jsonData
+            .filter(row => row['Address'] && row['List Price'] !== undefined)
+            .map(row => ({
+                address: String(row['Address'] || ''),
+                listPrice: Number(row['List Price'] || 0),
+                salePrice: Number(row['Sale Price'] || row['List Price'] || 0),
+                daysOnMarket: Number(row['Days on Market'] || 0),
+                status: String(row['Status'] || 'Active'),
+                agent: String(row['Agent'] || ''),
+            }))
+
+        // Calculate KPIs from data
+        const propertiesListed = agents.reduce((sum, agent) => sum + agent.listingsManaged, 0) || properties.length
+        const dealsClosed = agents.reduce((sum, agent) => sum + agent.dealsClosed, 0)
+        const totalRevenue = agents.reduce((sum, agent) => sum + agent.revenue, 0)
         const averageDealValue = dealsClosed > 0 ? totalRevenue / dealsClosed : 0
 
-        // Calculate funnel data from employees
-        const totalLeads = Math.round(employees.reduce((sum, emp) => {
-            if (emp.conversionRate > 0) {
-                return sum + (emp.dealsClosed / (emp.conversionRate / 100))
-            }
-            return sum
-        }, 0))
-        const qualified = Math.round(totalLeads * 0.55)
-        const closed = dealsClosed
+        // Generate time series data
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        const currentMonth = new Date().getMonth()
+        const propertyPerformance = months.slice(0, currentMonth + 1).map((month) => ({
+            month,
+            listed: Math.round(propertiesListed / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
+            sold: Math.round(dealsClosed / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
+        }))
+
+        const dealsOverTime = months.slice(0, currentMonth + 1).map((month) => ({
+            month,
+            deals: Math.round(dealsClosed / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
+            revenue: Math.round(totalRevenue / (currentMonth + 1) * (0.8 + Math.random() * 0.4)),
+        }))
 
         return {
-            totalRevenue,
+            propertiesListed,
             dealsClosed,
-            conversionRate,
+            totalRevenue,
             averageDealValue,
-            employees,
-            salesPerformance: salesData.salesPerformance, // Keep existing or calculate from data
-            funnel: [
-                { stage: 'Leads', count: totalLeads },
-                { stage: 'Qualified', count: qualified },
-                { stage: 'Closed', count: closed },
-            ],
+            agents: agents.length > 0 ? agents : salesData.agents,
+            properties,
+            propertyPerformance,
+            dealsOverTime,
         }
     }
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault()
         const file = e.dataTransfer.files[0]
-        if (file && file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
             const reader = new FileReader()
             reader.onload = (event) => {
                 const data = new Uint8Array(event.target?.result as ArrayBuffer)
@@ -197,174 +223,182 @@ export function Sales() {
         e.preventDefault()
     }
 
-    const maxRevenue = Math.max(...salesData.salesPerformance.map(d => d.revenue), 0)
-    const maxFunnel = Math.max(...salesData.funnel.map(f => f.count), 0)
-
+    const maxListed = Math.max(...salesData.propertyPerformance.map(d => d.listed), 0)
+    const maxSold = Math.max(...salesData.propertyPerformance.map(d => d.sold), 0)
+    const maxDeals = Math.max(...salesData.dealsOverTime.map(d => d.deals), 0)
     const renderContent = () => {
         switch (activeSection) {
             case 'Overview':
-                return (
-                    <>
-                        {/* Upload Data Section - First */}
-                        <div className="upload-section">
-                            <h3 className="section-title">Upload Employee Sales Data</h3>
-                            <p className="upload-description">
-                                Upload an Excel file (.xlsx) with employee sales data to automatically update all KPIs, charts, and tables.
-                                Expected columns: Name, Deals Closed, Revenue Generated, Conversion Rate, Status
-                            </p>
-                            <div
-                                className="upload-dropzone"
-                                onDrop={handleDrop}
-                                onDragOver={handleDragOver}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <div className="upload-icon">📊</div>
-                                <p className="upload-text">
-                                    <strong>Drop your Excel file here</strong> or click to browse
-                                </p>
-                                <p className="upload-hint">Supports .xlsx and .xls formats</p>
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept=".xlsx,.xls"
-                                    onChange={handleFileUpload}
-                                    style={{ display: 'none' }}
-                                />
-                            </div>
-                        </div>
-
+    return (
+        <>
                         {/* KPI Cards */}
                         <div className="kpi-grid">
                             <div className="kpi-card">
-                                <div className="kpi-label">Total Revenue</div>
-                                <div className="kpi-value">${(salesData.totalRevenue / 1000000).toFixed(2)}M</div>
+                                <div className="kpi-label">Properties Listed</div>
+                                <div className="kpi-value">{salesData.propertiesListed.toLocaleString()}</div>
                                 <div className="kpi-change positive">+12.5% vs last quarter</div>
                             </div>
                             <div className="kpi-card">
                                 <div className="kpi-label">Deals Closed</div>
-                                <div className="kpi-value">{salesData.dealsClosed}</div>
-                                <div className="kpi-change positive">+8 deals this month</div>
+                                <div className="kpi-value">{salesData.dealsClosed.toLocaleString()}</div>
+                                <div className="kpi-change positive">+8.3% increase</div>
                             </div>
                             <div className="kpi-card">
-                                <div className="kpi-label">Conversion Rate</div>
-                                <div className="kpi-value">{salesData.conversionRate.toFixed(1)}%</div>
-                                <div className="kpi-change positive">+2.3% improvement</div>
+                                <div className="kpi-label">Total Revenue</div>
+                                <div className="kpi-value">${(salesData.totalRevenue / 1000000).toFixed(1)}M</div>
+                                <div className="kpi-change positive">+15.2% growth</div>
                             </div>
                             <div className="kpi-card">
                                 <div className="kpi-label">Average Deal Value</div>
-                                <div className="kpi-value">${(salesData.averageDealValue / 1000).toFixed(1)}K</div>
-                                <div className="kpi-change positive">+5.2% increase</div>
+                                <div className="kpi-value">${salesData.averageDealValue.toLocaleString()}</div>
+                                <div className="kpi-change positive">+3.8% increase</div>
                             </div>
                         </div>
 
                         {/* Charts Section */}
                         <div className="charts-section">
                             <div className="chart-card">
-                                <h3 className="chart-title">Sales Performance Over Time</h3>
+                                <h3 className="chart-title">Property Performance Over Time</h3>
                                 <div className="chart-container">
                                     <div className="bar-chart">
-                                        {salesData.salesPerformance.map((data, index) => (
+                                        {salesData.propertyPerformance.map((data, index) => (
                                             <div key={index} className="bar-wrapper">
-                                                <div
-                                                    className="bar"
-                                                    style={{
-                                                        height: `${(data.revenue / maxRevenue) * 100}%`,
-                                                    }}
-                                                >
-                                                    <span className="bar-value">${(data.revenue / 1000).toFixed(0)}K</span>
+                                                <div className="bar-group">
+                                                    <div
+                                                        className="bar bar-listed"
+                                                        style={{
+                                                            height: `${(data.listed / maxListed) * 100}%`,
+                                                        }}
+                                                    >
+                                                        <span className="bar-value">{data.listed}</span>
+                                                    </div>
+                                                    <div
+                                                        className="bar bar-sold"
+                                                        style={{
+                                                            height: `${(data.sold / maxSold) * 100}%`,
+                                                        }}
+                                                    >
+                                                        <span className="bar-value">{data.sold}</span>
+                                                    </div>
                                                 </div>
                                                 <span className="bar-label">{data.month}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
+                                <div className="chart-legend">
+                                    <div className="legend-item">
+                                        <span className="legend-color" style={{ background: '#991B1B' }}></span>
+                                        <span>Listed</span>
+                                    </div>
+                                    <div className="legend-item">
+                                        <span className="legend-color" style={{ background: '#DC2626' }}></span>
+                                        <span>Sold</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="chart-card">
-                                <h3 className="chart-title">Sales Funnel</h3>
+                                <h3 className="chart-title">Deals Closed Over Time</h3>
                                 <div className="chart-container">
-                                    <div className="funnel-chart">
-                                        {salesData.funnel.map((stage, index) => (
-                                            <div key={index} className="funnel-stage">
-                                                <div className="funnel-bar-wrapper">
-                                                    <div
-                                                        className="funnel-bar"
-                                                        style={{
-                                                            width: `${(stage.count / maxFunnel) * 100}%`,
-                                                        }}
-                                                    >
-                                                        <span className="funnel-label">{stage.stage}</span>
-                                                        <span className="funnel-value">{stage.count}</span>
+                                    <div className="line-chart">
+                                        <svg className="line-chart-svg" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
+                                            {salesData.dealsOverTime.map((data, index) => {
+                                                if (index === salesData.dealsOverTime.length - 1) return null
+                                                const nextData = salesData.dealsOverTime[index + 1]
+                                                const pointWidth = 100 / salesData.dealsOverTime.length
+                                                const x1 = (index + 0.5) * pointWidth
+                                                const y1Percent = maxDeals > 0 ? 100 - ((data.deals / maxDeals) * 100) : 50
+                                                const y1 = Math.max(20, Math.min(y1Percent, 100 - 20))
+                                                const x2 = (index + 1.5) * pointWidth
+                                                const y2Percent = maxDeals > 0 ? 100 - ((nextData.deals / maxDeals) * 100) : 50
+                                                const y2 = Math.max(20, Math.min(y2Percent, 100 - 20))
+                                                return (
+                                                    <line
+                                                        key={`line-${index}`}
+                                                        x1={`${x1}%`}
+                                                        y1={`${y1}%`}
+                                                        x2={`${x2}%`}
+                                                        y2={`${y2}%`}
+                                                        stroke="#DC2626"
+                                                        strokeWidth="2"
+                                                        strokeDasharray="none"
+                                                        opacity="0.4"
+                                                    />
+                                                )
+                                            })}
+                                        </svg>
+                                        {salesData.dealsOverTime.map((data, index) => {
+                                            const percentage = maxDeals > 0 ? (data.deals / maxDeals) * 100 : 0
+                                            // Ensure the circle stays within bounds (20px is half of 40px circle height)
+                                            const bottomPosition = Math.max(20, Math.min(percentage, 100 - 20))
+                                            return (
+                                                <div key={index} className="line-point-wrapper">
+                                                    <div className="line-point" style={{ bottom: `calc(${bottomPosition}% - 20px)` }}>
+                                                        <span className="point-value">{data.deals}</span>
                                                     </div>
+                                                    <span className="line-label">{data.month}</span>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Employee Table */}
+                        {/* Agents Table */}
                         <div className="table-section">
-                            <h3 className="section-title">Team Performance</h3>
+                            <h3 className="section-title">Agent Performance</h3>
                             <div className="table-wrapper">
-                                <table className="employee-table">
+                                <table className="agent-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
+                                            <th>Listings Managed</th>
                                             <th>Deals Closed</th>
-                                            <th>Revenue Generated</th>
+                                            <th>Revenue</th>
                                             <th>Conversion Rate</th>
-                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {salesData.employees.map((employee, index) => (
+                                        {salesData.agents.map((agent, index) => (
                                             <tr key={index}>
-                                                <td className="employee-name">{employee.name}</td>
-                                                <td>{employee.dealsClosed}</td>
-                                                <td>${(employee.revenueGenerated / 1000).toFixed(0)}K</td>
-                                                <td>{employee.conversionRate.toFixed(1)}%</td>
-                                                <td>
-                                                    <span className={`status-badge status-${employee.status.toLowerCase().replace(' ', '-')}`}>
-                                                        {employee.status}
-                                                    </span>
-                                                </td>
+                                                <td className="agent-name">{agent.name}</td>
+                                                <td>{agent.listingsManaged.toLocaleString()}</td>
+                                                <td>{agent.dealsClosed.toLocaleString()}</td>
+                                                <td>${agent.revenue.toLocaleString()}</td>
+                                                <td>{agent.conversionRate.toFixed(1)}%</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+            </div>
                     </>
                 )
-            case 'Employees':
+            case 'Agents':
                 return (
                     <div className="table-section">
-                        <h3 className="section-title">Team Performance</h3>
+                        <h3 className="section-title">All Agents</h3>
                         <div className="table-wrapper">
-                            <table className="employee-table">
+                            <table className="agent-table">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Listings Managed</th>
                                         <th>Deals Closed</th>
-                                        <th>Revenue Generated</th>
+                                        <th>Revenue</th>
                                         <th>Conversion Rate</th>
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {salesData.employees.map((employee, index) => (
+                                    {salesData.agents.map((agent, index) => (
                                         <tr key={index}>
-                                            <td className="employee-name">{employee.name}</td>
-                                            <td>{employee.dealsClosed}</td>
-                                            <td>${(employee.revenueGenerated / 1000).toFixed(0)}K</td>
-                                            <td>{employee.conversionRate.toFixed(1)}%</td>
-                                            <td>
-                                                <span className={`status-badge status-${employee.status.toLowerCase().replace(' ', '-')}`}>
-                                                    {employee.status}
-                                                </span>
-                                            </td>
+                                            <td className="agent-name">{agent.name}</td>
+                                            <td>{agent.listingsManaged.toLocaleString()}</td>
+                                            <td>{agent.dealsClosed.toLocaleString()}</td>
+                                            <td>${agent.revenue.toLocaleString()}</td>
+                                            <td>{agent.conversionRate.toFixed(1)}%</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -372,27 +406,65 @@ export function Sales() {
                         </div>
                     </div>
                 )
-            case 'Sales Funnel':
+            case 'Listings':
                 return (
-                    <div className="chart-card">
-                        <h3 className="chart-title">Sales Funnel</h3>
-                        <div className="chart-container">
-                            <div className="funnel-chart">
-                                {salesData.funnel.map((stage, index) => (
-                                    <div key={index} className="funnel-stage">
-                                        <div className="funnel-bar-wrapper">
-                                            <div
-                                                className="funnel-bar"
-                                                style={{
-                                                    width: `${(stage.count / maxFunnel) * 100}%`,
-                                                }}
-                                            >
-                                                <span className="funnel-label">{stage.stage}</span>
-                                                <span className="funnel-value">{stage.count}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                    <div className="table-section">
+                        <h3 className="section-title">Property Listings</h3>
+                        <p className="section-description">
+                            {salesData.properties.length > 0 
+                                ? `Showing ${salesData.properties.length} properties from uploaded data.`
+                                : 'Upload property data to view listings here.'}
+                        </p>
+                        {salesData.properties.length > 0 && (
+                            <div className="table-wrapper">
+                                <table className="agent-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Address</th>
+                                            <th>List Price</th>
+                                            <th>Sale Price</th>
+                                            <th>Days on Market</th>
+                                            <th>Status</th>
+                                            <th>Agent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {salesData.properties.map((property, index) => (
+                                            <tr key={index}>
+                                                <td className="agent-name">{property.address}</td>
+                                                <td>${property.listPrice.toLocaleString()}</td>
+                                                <td>${property.salePrice.toLocaleString()}</td>
+                                                <td>{property.daysOnMarket}</td>
+                                                <td>
+                                                    <span className={`status-badge ${property.status.toLowerCase()}`}>
+                                                        {property.status}
+                                                    </span>
+                                                </td>
+                                                <td>{property.agent}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )
+            case 'Deals':
+                return (
+                    <div className="table-section">
+                        <h3 className="section-title">Closed Deals</h3>
+                        <div className="deals-summary">
+                            <div className="summary-card">
+                                <div className="summary-label">Total Deals</div>
+                                <div className="summary-value">{salesData.dealsClosed}</div>
+                            </div>
+                            <div className="summary-card">
+                                <div className="summary-label">Total Revenue</div>
+                                <div className="summary-value">${(salesData.totalRevenue / 1000000).toFixed(2)}M</div>
+                            </div>
+                            <div className="summary-card">
+                                <div className="summary-label">Average Deal Value</div>
+                                <div className="summary-value">${salesData.averageDealValue.toLocaleString()}</div>
                             </div>
                         </div>
                     </div>
@@ -400,10 +472,14 @@ export function Sales() {
             case 'Upload Data':
                 return (
                     <div className="upload-section">
-                        <h3 className="section-title">Upload Employee Sales Data</h3>
+                        <h3 className="section-title">Upload Property & Agent Data</h3>
                         <p className="upload-description">
-                            Upload an Excel file (.xlsx) with employee sales data to automatically update all KPIs, charts, and tables.
-                            Expected columns: Name, Deals Closed, Revenue Generated, Conversion Rate, Status
+                            Upload your Excel file containing property listings and agent performance data. 
+                            The system will automatically process the information and generate comprehensive performance insights across the dashboard.
+                            <br /><br />
+                            <strong>Expected format for Agents:</strong> Name, Listings Managed, Deals Closed, Revenue, Conversion Rate
+                            <br />
+                            <strong>Expected format for Properties:</strong> Address, List Price, Sale Price, Days on Market, Status, Agent
                         </p>
                         <div
                             className="upload-dropzone"
@@ -428,47 +504,94 @@ export function Sales() {
                 )
             case 'Analytics':
                 return (
-                    <div className="charts-section">
-                        <div className="chart-card">
-                            <h3 className="chart-title">Sales Performance Over Time</h3>
-                            <div className="chart-container">
-                                <div className="bar-chart">
-                                    {salesData.salesPerformance.map((data, index) => (
-                                        <div key={index} className="bar-wrapper">
-                                            <div
-                                                className="bar"
-                                                style={{
-                                                    height: `${(data.revenue / maxRevenue) * 100}%`,
-                                                }}
-                                            >
-                                                <span className="bar-value">${(data.revenue / 1000).toFixed(0)}K</span>
+                    <div className="analytics-section">
+                        <h3 className="section-title">Performance Analytics</h3>
+                        <div className="charts-section">
+                            <div className="chart-card">
+                                <h3 className="chart-title">Property Performance Over Time</h3>
+                                <div className="chart-container">
+                                    <div className="bar-chart">
+                                        {salesData.propertyPerformance.map((data, index) => (
+                                            <div key={index} className="bar-wrapper">
+                                                <div className="bar-group">
+                                                    <div
+                                                        className="bar bar-listed"
+                                                        style={{
+                                                            height: `${(data.listed / maxListed) * 100}%`,
+                                                        }}
+                                                    >
+                                                        <span className="bar-value">{data.listed}</span>
+                                                    </div>
+                                                    <div
+                                                        className="bar bar-sold"
+                                                        style={{
+                                                            height: `${(data.sold / maxSold) * 100}%`,
+                                                        }}
+                                                    >
+                                                        <span className="bar-value">{data.sold}</span>
+                                                    </div>
+                                                </div>
+                                                <span className="bar-label">{data.month}</span>
                                             </div>
-                                            <span className="bar-label">{data.month}</span>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="chart-legend">
+                                    <div className="legend-item">
+                                        <span className="legend-color" style={{ background: '#991B1B' }}></span>
+                                        <span>Listed</span>
+                                    </div>
+                                    <div className="legend-item">
+                                        <span className="legend-color" style={{ background: '#DC2626' }}></span>
+                                        <span>Sold</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="chart-card">
-                            <h3 className="chart-title">Sales Funnel</h3>
-                            <div className="chart-container">
-                                <div className="funnel-chart">
-                                    {salesData.funnel.map((stage, index) => (
-                                        <div key={index} className="funnel-stage">
-                                            <div className="funnel-bar-wrapper">
-                                                <div
-                                                    className="funnel-bar"
-                                                    style={{
-                                                        width: `${(stage.count / maxFunnel) * 100}%`,
-                                                    }}
-                                                >
-                                                    <span className="funnel-label">{stage.stage}</span>
-                                                    <span className="funnel-value">{stage.count}</span>
+                            <div className="chart-card">
+                                <h3 className="chart-title">Deals Closed Over Time</h3>
+                                <div className="chart-container">
+                                    <div className="line-chart">
+                                        <svg className="line-chart-svg" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
+                                            {salesData.dealsOverTime.map((data, index) => {
+                                                if (index === salesData.dealsOverTime.length - 1) return null
+                                                const nextData = salesData.dealsOverTime[index + 1]
+                                                const pointWidth = 100 / salesData.dealsOverTime.length
+                                                const x1 = (index + 0.5) * pointWidth
+                                                const y1Percent = maxDeals > 0 ? 100 - ((data.deals / maxDeals) * 100) : 50
+                                                const y1 = Math.max(20, Math.min(y1Percent, 100 - 20))
+                                                const x2 = (index + 1.5) * pointWidth
+                                                const y2Percent = maxDeals > 0 ? 100 - ((nextData.deals / maxDeals) * 100) : 50
+                                                const y2 = Math.max(20, Math.min(y2Percent, 100 - 20))
+                                                return (
+                                                    <line
+                                                        key={`line-${index}`}
+                                                        x1={`${x1}%`}
+                                                        y1={`${y1}%`}
+                                                        x2={`${x2}%`}
+                                                        y2={`${y2}%`}
+                                                        stroke="#DC2626"
+                                                        strokeWidth="2"
+                                                        strokeDasharray="none"
+                                                        opacity="0.4"
+                                                    />
+                                                )
+                                            })}
+                                        </svg>
+                                        {salesData.dealsOverTime.map((data, index) => {
+                                            const percentage = maxDeals > 0 ? (data.deals / maxDeals) * 100 : 0
+                                            // Ensure the circle stays within bounds (20px is half of 40px circle height)
+                                            const bottomPosition = Math.max(20, Math.min(percentage, 100 - 20))
+                                            return (
+                                                <div key={index} className="line-point-wrapper">
+                                                    <div className="line-point" style={{ bottom: `calc(${bottomPosition}% - 20px)` }}>
+                                                        <span className="point-value">{data.deals}</span>
+                                                    </div>
+                                                    <span className="line-label">{data.month}</span>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                            )
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -476,11 +599,16 @@ export function Sales() {
                 )
             case 'Settings':
                 return (
-                    <div className="table-section">
-                        <h3 className="section-title">Settings</h3>
-                        <p className="section-description">
-                            Configure your sales dashboard settings and preferences.
-                        </p>
+                    <div className="settings-section">
+                        <h3 className="section-title">Dashboard Settings</h3>
+                        <div className="settings-card">
+                            <h4>Display Preferences</h4>
+                            <p>Configure your dashboard display preferences and data refresh settings.</p>
+                        </div>
+                        <div className="settings-card">
+                            <h4>Data Management</h4>
+                            <p>Manage data sources and export options for your reports.</p>
+                        </div>
                     </div>
                 )
             default:
@@ -493,7 +621,7 @@ export function Sales() {
             <aside className="sales-sidebar">
                 <div className="sidebar-header">
                     <div className="sidebar-title-container">
-                        <h2 className="sidebar-title">Sales Dashboard</h2>
+                        <h2 className="sidebar-title">Sales</h2>
                         <div className="user-menu-container" ref={menuRef}>
                             <button 
                                 className="logout-button" 
@@ -551,16 +679,22 @@ export function Sales() {
                         Overview
                     </button>
                     <button
-                        className={`nav-item ${activeSection === 'Employees' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Employees')}
+                        className={`nav-item ${activeSection === 'Agents' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Agents')}
                     >
-                        Employees
+                        Agents
                     </button>
                     <button
-                        className={`nav-item ${activeSection === 'Sales Funnel' ? 'active' : ''}`}
-                        onClick={() => setActiveSection('Sales Funnel')}
+                        className={`nav-item ${activeSection === 'Listings' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Listings')}
                     >
-                        Sales Funnel
+                        Listings
+                    </button>
+                    <button
+                        className={`nav-item ${activeSection === 'Deals' ? 'active' : ''}`}
+                        onClick={() => setActiveSection('Deals')}
+                    >
+                        Deals
                     </button>
                     <button
                         className={`nav-item ${activeSection === 'Upload Data' ? 'active' : ''}`}
@@ -586,7 +720,7 @@ export function Sales() {
             <main className="sales-main">
                 <div className="sales-content">
                     <h1 className="dashboard-title">
-                        {activeSection === 'Overview' ? 'Sales Performance Overview' : activeSection}
+                        {activeSection === 'Overview' ? 'Performance Dashboard' : activeSection}
                     </h1>
                     {renderContent()}
                 </div>
